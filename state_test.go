@@ -24,7 +24,7 @@ func TestResolveStateErrors(t *testing.T) {
 			state_transition: StateTransition_STATE_TRANSITION_MODE_APPROACH_SELECTED,
 			input_state:      MissionState_MISSION_STATE_APPROACH,
 			result_state:     MissionState_MISSION_STATE_APPROACH,
-			err:              nil,
+			err:              ErrInvalidStateTransition,
 		},
 	}
 
@@ -37,7 +37,7 @@ func TestResolveStateErrors(t *testing.T) {
 	}
 }
 
-// TestResolveStateValidTransitions checks that all the transitions are correct
+// TestResolveStateValidTransitions checks that transitions are correctly resolved for all defined state transitions
 func TestResolveStateValidTransitions(t *testing.T) {
 	// Setup
 	testCases := []struct {
@@ -55,9 +55,51 @@ func TestResolveStateValidTransitions(t *testing.T) {
 			err:              nil,
 		},
 		{
+			desc:             "transition from approach state to kamikaze state with mode kamikaze selected",
+			state_transition: StateTransition_STATE_TRANSITION_MODE_KAMIKAZE_SELECTED,
+			input_state:      MissionState_MISSION_STATE_APPROACH,
+			result_state:     MissionState_MISSION_STATE_KAMIKAZE,
+			err:              nil,
+		},
+		{
 			desc:             "transition from following state to approach state with lock_failed",
 			state_transition: StateTransition_STATE_TRANSITION_LOCK_FAILED,
 			input_state:      MissionState_MISSION_STATE_FOLLOWING,
+			result_state:     MissionState_MISSION_STATE_APPROACH,
+			err:              nil,
+		},
+		{
+			desc:             "transition from following state to approach state with lock_success",
+			state_transition: StateTransition_STATE_TRANSITION_LOCK_SUCCESS,
+			input_state:      MissionState_MISSION_STATE_FOLLOWING,
+			result_state:     MissionState_MISSION_STATE_APPROACH,
+			err:              nil,
+		},
+		{
+			desc:             "transition from following state to kamikaze state with mode kamikaze selected",
+			state_transition: StateTransition_STATE_TRANSITION_MODE_KAMIKAZE_SELECTED,
+			input_state:      MissionState_MISSION_STATE_FOLLOWING,
+			result_state:     MissionState_MISSION_STATE_KAMIKAZE,
+			err:              nil,
+		},
+		{
+			desc:             "transition from kamikaze state to kamikaze state with QR failed",
+			state_transition: StateTransition_STATE_TRANSITION_QR_FAILED,
+			input_state:      MissionState_MISSION_STATE_KAMIKAZE,
+			result_state:     MissionState_MISSION_STATE_KAMIKAZE,
+			err:              nil,
+		},
+		{
+			desc:             "transition from kamikaze state to approach state with QR success",
+			state_transition: StateTransition_STATE_TRANSITION_QR_SUCCESS,
+			input_state:      MissionState_MISSION_STATE_KAMIKAZE,
+			result_state:     MissionState_MISSION_STATE_APPROACH,
+			err:              nil,
+		},
+		{
+			desc:             "transition from kamikaze state to approach state with mode approach selected",
+			state_transition: StateTransition_STATE_TRANSITION_MODE_APPROACH_SELECTED,
+			input_state:      MissionState_MISSION_STATE_KAMIKAZE,
 			result_state:     MissionState_MISSION_STATE_APPROACH,
 			err:              nil,
 		},
