@@ -9,6 +9,7 @@ import (
 
 	// This import path is based on the name declaration in the go.mod,
 	// and the gen/proto/go output location in the buf.gen.yaml.
+	mm "github.com/koustech/mastermind"
 	pb "github.com/koustech/mastermind/gen/proto/go/mastermind/v1"
 	"google.golang.org/grpc"
 )
@@ -47,7 +48,7 @@ type mastermindServiceServer struct {
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
 	s.current_state = pb.MissionState_MISSION_STATE_APPROACH
 	for {
-		_, err := stream.Recv()
+		req, err := stream.Recv()
 		if err == io.EOF {
 			return nil
 		}
@@ -55,17 +56,15 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 			return err
 		}
 		s.mu.Lock()
-
-		switch s.current_state {
-		case pb.MissionState_MISSION_STATE_APPROACH:
-			stream.Send(&pb.UpdateStateResponse{CurrentState: pb.MissionState_MISSION_STATE_APPROACH})
-		case pb.MissionState_MISSION_STATE_FOLLOWING:
-			stream.Send(&pb.UpdateStateResponse{CurrentState: pb.MissionState_MISSION_STATE_FOLLOWING})
-		case pb.MissionState_MISSION_STATE_KAMIKAZE:
-			stream.Send(&pb.UpdateStateResponse{CurrentState: pb.MissionState_MISSION_STATE_KAMIKAZE})
-		default:
-			stream.Send(&pb.UpdateStateResponse{CurrentState: pb.MissionState_MISSION_STATE_APPROACH})
-		}
+		old_state := s.current_state
+		s.current_state, err = mm.ResolveState(req.StateTransition, s.current_state)
 		s.mu.Unlock()
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
+		}
+		if err := stream.Send(&pb.UpdateStateResponse{OldState: old_state, StateTransition: req.StateTransition, CurrentState: s.current_state}); err != nil {
+			return err
+		}
+
 	}
 }
