@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package mastermind.v1;
+
+// A MissionState is a state the mission can be in at any point in time
+enum MissionState {
+  MISSION_STATE_UNSPECIFIED = 0;
+  MISSION_STATE_APPROACH = 1;
+  MISSION_STATE_FOLLOWING = 2;
+  MISSION_STATE_KAMIKAZE = 3;
+}
+
+// A StateTransition is an action that causes the current MissonState to change
+//
+// e.g. STATE_TRANSITION_TARGET_APPROACHED changes mission state
+// from MISSION_STATE_APPROACH to MISSION_STATE_FOLLOWING
+enum StateTransition {
+  STATE_TRANSITION_UNSPECIFIED = 0;
+  STATE_TRANSITION_TARGET_APPROACHED = 1;
+  STATE_TRANSITION_LOCK_FAILED = 2;
+  STATE_TRANSITION_LOCK_SUCCESS = 3;
+  STATE_TRANSITION_QR_SUCCESS = 4;
+  STATE_TRANSITION_QR_FAILED = 5;
+  STATE_TRANSITION_MODE_KAMIKAZE_SELECTED = 6;
+  STATE_TRANSITION_MODE_APPROACH_SELECTED = 7;
+}
+
+message UpdateStateRequest { StateTransition state_transition = 1; }
+
+message UpdateStateResponse {
+  MissionState old_state = 1;
+  StateTransition state_transition = 2;
+  MissionState current_state = 3;
+}
+
+service MastermindService {
+
+  // A bidirectional stream
+  // Accepts a stream of UpdateStateRequests during the competition, while
+  // sending UpdateStateResponses whenever a valid StateTransition is submitted
+  // by any client
+  rpc UpdateState(stream UpdateStateRequest)
+      returns (stream UpdateStateResponse);
+}
