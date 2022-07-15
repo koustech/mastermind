@@ -13,5 +13,8 @@ TODO
 ## Quickstart
 releaseteki programı indirip terminal üzerinden çalıştırılabilir
 
-TODO
+```
+go run server/main.go
+```
+
 
