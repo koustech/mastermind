@@ -1,4 +1,4 @@
-package mastermind
+package state
 
 import (
 	"errors"
