@@ -3,7 +3,7 @@ package state
 import (
 	"errors"
 
-	. "github.com/koustech/mastermind/gen/proto/go/mastermind/v1"
+	. "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 )
 
 // ErrInvalidStateTransition is the error returned by ResolveState when an invalid StateTransition happens
