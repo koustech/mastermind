@@ -5,15 +5,15 @@ managed:
     default: github.com/koustech/mastermind/gen/proto/go
 plugins:
   - name: dart
-    out: gen/proto/dart
+    out: gen/dart
   - name: python
-    out: gen/proto/python
+    out: gen/python
   - name: go
-    out: gen/proto/go
+    out: gen/go
     opt:
       - paths=source_relative
   - name: go-grpc
-    out: gen/proto/go
+    out: gen/go
     opt:
       - paths=source_relative
       - require_unimplemented_servers=false
