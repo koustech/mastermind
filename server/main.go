@@ -8,7 +8,7 @@ import (
 	"net"
 	"sync"
 
-	pb "github.com/koustech/mastermind/gen/proto/go/mastermind/v1"
+	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"google.golang.org/grpc"
 )
 
