@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/google/uuid"
+	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/state"
+	"google.golang.org/grpc"
 	"io"
 	"log"
 	"net"
 	"sync"
-
-	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
-	"google.golang.org/grpc"
 )
 
 func main() {
@@ -40,33 +40,31 @@ type mastermindServiceServer struct {
 	pb.UnimplementedMastermindServiceServer
 	stateMu      sync.Mutex // protects currentState
 	currentState pb.MissionState
-	chansMu      sync.Mutex // protects chans
-	chans        map[pb.SendingService]chan *pb.UpdateStateResponse
+	chansMu      sync.Mutex                                 // protects sessions
+	sessions     map[uuid.UUID]chan *pb.UpdateStateResponse // all active sessions
 }
 
 func NewMastermindServiceServer() *mastermindServiceServer {
 	// initializes state and allocates channels into empty channels slice
-	chans := make(map[pb.SendingService]chan *pb.UpdateStateResponse)
+	chans := make(map[uuid.UUID]chan *pb.UpdateStateResponse)
 	return &mastermindServiceServer{
 		currentState: pb.MissionState_MISSION_STATE_APPROACH,
-		chans:        chans,
+		sessions:     chans,
 	}
 }
 
 // UpdateState updates the current state according to the state transition table
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
+
 	fmt.Println("new connection")
-	channelChan := make(chan chan *pb.UpdateStateResponse) // holds the channel to be used throughout the stream. Only used once
-	var sendingService pb.SendingService
+
+	// generate new sessionId and add channel
+	sessionId := uuid.New()
+	s.sessions[sessionId] = make(chan *pb.UpdateStateResponse)
+
 	eof := make(chan bool)
 	errChan := make(chan error)
-	cleanup := func() {
-		fmt.Println("deleting service key from channel")
-		delete(s.chans, sendingService)
-	}
-
-	go func() {
-		defer cleanup()
+	receiverThread := func() {
 		for {
 			req, err := stream.Recv()
 			if err == io.EOF {
@@ -77,21 +75,7 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 				errChan <- err
 				return
 			}
-			sendingService = req.SendingService
-			fmt.Printf("request received from %v\n", req.SendingService)
-			// create channel for sending service if doesn't exist
-			_, exists := s.chans[req.SendingService]
-			if !exists {
-				//nameCh <- req.SendingService
-				s.chans[req.SendingService] = make(chan *pb.UpdateStateResponse)
-
-				fmt.Printf("created channel for %v\n", req.SendingService)
-
-				channelChan <- s.chans[req.SendingService]
-				fmt.Printf("transferred channel for %v\n", req.SendingService)
-			} else {
-				fmt.Println("channel already exists")
-			}
+			fmt.Printf("request received on session %v\n", sessionId)
 
 			s.stateMu.Lock()
 			oldState := s.currentState
@@ -100,40 +84,39 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 
 			fmt.Println("calculated state")
 
-			for service, ch := range s.chans {
+			for service, ch := range s.sessions {
 				fmt.Printf("sending state response through %v channel...\n", service)
 				ch <- &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}
 				fmt.Printf("sent state response through %v channel\n\n", service)
 			}
 			s.stateMu.Unlock()
 		}
-	}()
+	}
 
-	fmt.Println("awaiting channel name...")
-	var ch chan *pb.UpdateStateResponse
-	ch = <-channelChan
+	cleanup := func() {
+		fmt.Println("deleting channel...")
+		close(s.sessions[sessionId])
+		fmt.Println("removing sessionId from sessions list...")
 
-	defer func() {
-		fmt.Printf("closing %v, %v", channelChan, ch)
-		cleanup()
-		close(channelChan)
-		close(ch)
-	}()
+		delete(s.sessions, sessionId)
+
+	}
+
+	go receiverThread()
+
+	defer cleanup()
 
 	for {
-
 		select {
 		case <-eof:
 			return nil
-
 		case err := <-errChan:
 			return err
-		default:
-		}
-
-		if err := stream.Send(<-ch); err != nil {
-			fmt.Println("stream closed")
-			return err
+		case response := <-s.sessions[sessionId]:
+			if err := stream.Send(response); err != nil {
+				fmt.Println("stream closed")
+				return err
+			}
 		}
 	}
 }
