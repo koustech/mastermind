@@ -55,24 +55,3 @@ class StateTransition extends $pb.ProtobufEnum {
   const StateTransition._($core.int v, $core.String n) : super(v, n);
 }
 
-class SendingService extends $pb.ProtobufEnum {
-  static const SendingService SENDING_SERVICE_UNSPECIFIED = SendingService._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDING_SERVICE_UNSPECIFIED');
-  static const SendingService SENDING_SERVICE_APPROACH = SendingService._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDING_SERVICE_APPROACH');
-  static const SendingService SENDING_SERVICE_LOCK = SendingService._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDING_SERVICE_LOCK');
-  static const SendingService SENDING_SERVICE_KAMIKAZE = SendingService._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDING_SERVICE_KAMIKAZE');
-  static const SendingService SENDING_SERVICE_GUI = SendingService._(4, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'SENDING_SERVICE_GUI');
-
-  static const $core.List<SendingService> values = <SendingService> [
-    SENDING_SERVICE_UNSPECIFIED,
-    SENDING_SERVICE_APPROACH,
-    SENDING_SERVICE_LOCK,
-    SENDING_SERVICE_KAMIKAZE,
-    SENDING_SERVICE_GUI,
-  ];
-
-  static final $core.Map<$core.int, SendingService> _byValue = $pb.ProtobufEnum.initByValue(values);
-  static SendingService? valueOf($core.int value) => _byValue[value];
-
-  const SendingService._($core.int v, $core.String n) : super(v, n);
-}
-

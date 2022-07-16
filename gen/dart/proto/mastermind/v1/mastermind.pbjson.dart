@@ -38,31 +38,16 @@ const StateTransition$json = const {
 
 /// Descriptor for `StateTransition`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List stateTransitionDescriptor = $convert.base64Decode('Cg9TdGF0ZVRyYW5zaXRpb24SIAocU1RBVEVfVFJBTlNJVElPTl9VTlNQRUNJRklFRBAAEiYKIlNUQVRFX1RSQU5TSVRJT05fVEFSR0VUX0FQUFJPQUNIRUQQARIgChxTVEFURV9UUkFOU0lUSU9OX0xPQ0tfRkFJTEVEEAISIQodU1RBVEVfVFJBTlNJVElPTl9MT0NLX1NVQ0NFU1MQAxIfChtTVEFURV9UUkFOU0lUSU9OX1FSX1NVQ0NFU1MQBBIeChpTVEFURV9UUkFOU0lUSU9OX1FSX0ZBSUxFRBAFEisKJ1NUQVRFX1RSQU5TSVRJT05fTU9ERV9LQU1JS0FaRV9TRUxFQ1RFRBAGEisKJ1NUQVRFX1RSQU5TSVRJT05fTU9ERV9BUFBST0FDSF9TRUxFQ1RFRBAH');
-@$core.Deprecated('Use sendingServiceDescriptor instead')
-const SendingService$json = const {
-  '1': 'SendingService',
-  '2': const [
-    const {'1': 'SENDING_SERVICE_UNSPECIFIED', '2': 0},
-    const {'1': 'SENDING_SERVICE_APPROACH', '2': 1},
-    const {'1': 'SENDING_SERVICE_LOCK', '2': 2},
-    const {'1': 'SENDING_SERVICE_KAMIKAZE', '2': 3},
-    const {'1': 'SENDING_SERVICE_GUI', '2': 4},
-  ],
-};
-
-/// Descriptor for `SendingService`. Decode as a `google.protobuf.EnumDescriptorProto`.
-final $typed_data.Uint8List sendingServiceDescriptor = $convert.base64Decode('Cg5TZW5kaW5nU2VydmljZRIfChtTRU5ESU5HX1NFUlZJQ0VfVU5TUEVDSUZJRUQQABIcChhTRU5ESU5HX1NFUlZJQ0VfQVBQUk9BQ0gQARIYChRTRU5ESU5HX1NFUlZJQ0VfTE9DSxACEhwKGFNFTkRJTkdfU0VSVklDRV9LQU1JS0FaRRADEhcKE1NFTkRJTkdfU0VSVklDRV9HVUkQBA==');
 @$core.Deprecated('Use updateStateRequestDescriptor instead')
 const UpdateStateRequest$json = const {
   '1': 'UpdateStateRequest',
   '2': const [
-    const {'1': 'sending_service', '3': 1, '4': 1, '5': 14, '6': '.mastermind.v1.SendingService', '10': 'sendingService'},
-    const {'1': 'state_transition', '3': 2, '4': 1, '5': 14, '6': '.mastermind.v1.StateTransition', '10': 'stateTransition'},
+    const {'1': 'state_transition', '3': 1, '4': 1, '5': 14, '6': '.mastermind.v1.StateTransition', '10': 'stateTransition'},
   ],
 };
 
 /// Descriptor for `UpdateStateRequest`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List updateStateRequestDescriptor = $convert.base64Decode('ChJVcGRhdGVTdGF0ZVJlcXVlc3QSRgoPc2VuZGluZ19zZXJ2aWNlGAEgASgOMh0ubWFzdGVybWluZC52MS5TZW5kaW5nU2VydmljZVIOc2VuZGluZ1NlcnZpY2USSQoQc3RhdGVfdHJhbnNpdGlvbhgCIAEoDjIeLm1hc3Rlcm1pbmQudjEuU3RhdGVUcmFuc2l0aW9uUg9zdGF0ZVRyYW5zaXRpb24=');
+final $typed_data.Uint8List updateStateRequestDescriptor = $convert.base64Decode('ChJVcGRhdGVTdGF0ZVJlcXVlc3QSSQoQc3RhdGVfdHJhbnNpdGlvbhgBIAEoDjIeLm1hc3Rlcm1pbmQudjEuU3RhdGVUcmFuc2l0aW9uUg9zdGF0ZVRyYW5zaXRpb24=');
 @$core.Deprecated('Use updateStateResponseDescriptor instead')
 const UpdateStateResponse$json = const {
   '1': 'UpdateStateResponse',

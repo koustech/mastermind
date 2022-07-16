@@ -16,20 +16,15 @@ export 'mastermind.pbenum.dart';
 
 class UpdateStateRequest extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'UpdateStateRequest', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'mastermind.v1'), createEmptyInstance: create)
-    ..e<SendingService>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sendingService', $pb.PbFieldType.OE, defaultOrMaker: SendingService.SENDING_SERVICE_UNSPECIFIED, valueOf: SendingService.valueOf, enumValues: SendingService.values)
-    ..e<StateTransition>(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stateTransition', $pb.PbFieldType.OE, defaultOrMaker: StateTransition.STATE_TRANSITION_UNSPECIFIED, valueOf: StateTransition.valueOf, enumValues: StateTransition.values)
+    ..e<StateTransition>(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'stateTransition', $pb.PbFieldType.OE, defaultOrMaker: StateTransition.STATE_TRANSITION_UNSPECIFIED, valueOf: StateTransition.valueOf, enumValues: StateTransition.values)
     ..hasRequiredFields = false
   ;
 
   UpdateStateRequest._() : super();
   factory UpdateStateRequest({
-    SendingService? sendingService,
     StateTransition? stateTransition,
   }) {
     final _result = create();
-    if (sendingService != null) {
-      _result.sendingService = sendingService;
-    }
     if (stateTransition != null) {
       _result.stateTransition = stateTransition;
     }
@@ -57,22 +52,13 @@ class UpdateStateRequest extends $pb.GeneratedMessage {
   static UpdateStateRequest? _defaultInstance;
 
   @$pb.TagNumber(1)
-  SendingService get sendingService => $_getN(0);
+  StateTransition get stateTransition => $_getN(0);
   @$pb.TagNumber(1)
-  set sendingService(SendingService v) { setField(1, v); }
+  set stateTransition(StateTransition v) { setField(1, v); }
   @$pb.TagNumber(1)
-  $core.bool hasSendingService() => $_has(0);
+  $core.bool hasStateTransition() => $_has(0);
   @$pb.TagNumber(1)
-  void clearSendingService() => clearField(1);
-
-  @$pb.TagNumber(2)
-  StateTransition get stateTransition => $_getN(1);
-  @$pb.TagNumber(2)
-  set stateTransition(StateTransition v) { setField(2, v); }
-  @$pb.TagNumber(2)
-  $core.bool hasStateTransition() => $_has(1);
-  @$pb.TagNumber(2)
-  void clearStateTransition() => clearField(2);
+  void clearStateTransition() => clearField(1);
 }
 
 class UpdateStateResponse extends $pb.GeneratedMessage {

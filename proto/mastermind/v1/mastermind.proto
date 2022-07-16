@@ -26,18 +26,9 @@ enum StateTransition {
 }
 
 
-// A SendingService is the service that sent the request
-enum SendingService {
-  SENDING_SERVICE_UNSPECIFIED = 0; // Default value
-  SENDING_SERVICE_APPROACH = 1; // Approach service
-  SENDING_SERVICE_LOCK = 2; // Lock on/following service
-  SENDING_SERVICE_KAMIKAZE = 3; // Kamikaze service
-  SENDING_SERVICE_GUI = 4; // Graphical User Interface service
-}
 
 message UpdateStateRequest {
-  SendingService sending_service = 1;
-  StateTransition state_transition = 2;
+  StateTransition state_transition = 1;
 }
 
 message UpdateStateResponse {
