@@ -6,8 +6,22 @@ managed:
 plugins:
   - name: dart
     out: gen/dart
+    opt: grpc
+
+    
+  # - name: dart-grpc
+  #   out: gen/dart
+
   - name: python
     out: gen/python
+    # opt: 
+      # - grpc_python_out=gen/python
+  # - name: python-grpc
+  - name: python_grpc
+    out: gen/python
+    
+
+  #   out: gen/python
   - name: go
     out: gen/go
     opt:

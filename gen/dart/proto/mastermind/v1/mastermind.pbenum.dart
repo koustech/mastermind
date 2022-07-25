@@ -55,3 +55,22 @@ class StateTransition extends $pb.ProtobufEnum {
   const StateTransition._($core.int v, $core.String n) : super(v, n);
 }
 
+class AgilityLevel extends $pb.ProtobufEnum {
+  static const AgilityLevel AGILITY_LEVEL_UNSPECIFIED = AgilityLevel._(0, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AGILITY_LEVEL_UNSPECIFIED');
+  static const AgilityLevel AGILITY_LEVEL_HIGH = AgilityLevel._(1, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AGILITY_LEVEL_HIGH');
+  static const AgilityLevel AGILITY_LEVEL_MEDIUM = AgilityLevel._(2, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AGILITY_LEVEL_MEDIUM');
+  static const AgilityLevel AGILITY_LEVEL_LOW = AgilityLevel._(3, const $core.bool.fromEnvironment('protobuf.omit_enum_names') ? '' : 'AGILITY_LEVEL_LOW');
+
+  static const $core.List<AgilityLevel> values = <AgilityLevel> [
+    AGILITY_LEVEL_UNSPECIFIED,
+    AGILITY_LEVEL_HIGH,
+    AGILITY_LEVEL_MEDIUM,
+    AGILITY_LEVEL_LOW,
+  ];
+
+  static final $core.Map<$core.int, AgilityLevel> _byValue = $pb.ProtobufEnum.initByValue(values);
+  static AgilityLevel? valueOf($core.int value) => _byValue[value];
+
+  const AgilityLevel._($core.int v, $core.String n) : super(v, n);
+}
+
