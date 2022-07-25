@@ -5,16 +5,20 @@ import (
 	"github.com/google/uuid"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/state"
+	"github.com/koustech/mastermind/utils"
 	"google.golang.org/grpc"
 	"io"
-	"log"
 	"net"
 	"sync"
 )
 
 func main() {
+	utils.InitializeLoggers()
+
+	defer utils.SyncLogger()
+
 	if err := run(); err != nil {
-		log.Fatal(err)
+		utils.Sugar.Fatal(err)
 	}
 }
 
@@ -27,7 +31,7 @@ func run() error {
 
 	gRPCServer := grpc.NewServer()
 	pb.RegisterMastermindServiceServer(gRPCServer, NewMastermindServiceServer())
-	log.Println("Listening on", listenOn)
+	utils.Sugar.Infof("Listening on %v", listenOn)
 	if err := gRPCServer.Serve(listener); err != nil {
 		return fmt.Errorf("failed to serve gRPC server: %w", err)
 	}
@@ -56,7 +60,7 @@ func NewMastermindServiceServer() *mastermindServiceServer {
 // UpdateState updates the current state according to the state transition table
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
 
-	fmt.Println("new connection")
+	utils.Sugar.Info("new connection")
 
 	// generate new sessionId and add channel
 	sessionId := uuid.New()
@@ -75,31 +79,33 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 				errChan <- err
 				return
 			}
-			fmt.Printf("request received on session %v\n", sessionId)
+			utils.Sugar.Debugf("request received on session %v", sessionId)
 
 			s.stateMu.Lock()
 			oldState := s.currentState
 
 			s.currentState, err = state.ResolveState(req.StateTransition, s.currentState)
 
-			fmt.Println("calculated state")
+			utils.Sugar.Debug("calculated state")
 
 			for service, ch := range s.sessions {
-				fmt.Printf("sending state response through %v channel...\n", service)
+				utils.Sugar.Debugf("sending state response through %v channel...", service)
 				ch <- &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}
-				fmt.Printf("sent state response through %v channel\n\n", service)
+				utils.Sugar.Debugf("sent state response through %v channel", service)
 			}
 			s.stateMu.Unlock()
+			utils.Sugar.Debugf("state mutex unlocked")
 		}
 	}
 
 	cleanup := func() {
-		fmt.Println("deleting channel...")
+		utils.Sugar.Debugf("deleting channel for sessionId %v...", sessionId)
 		close(s.sessions[sessionId])
-		fmt.Println("removing sessionId from sessions list...")
+		utils.Sugar.Debugf("deleted channel for sessionId %v", sessionId)
 
+		utils.Sugar.Debugf("removing sessionId %v from sessions Map...", sessionId)
 		delete(s.sessions, sessionId)
-
+		utils.Sugar.Infof("removed sessionId %v from sessions Map", sessionId)
 	}
 
 	go receiverThread()
@@ -114,7 +120,7 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 			return err
 		case response := <-s.sessions[sessionId]:
 			if err := stream.Send(response); err != nil {
-				fmt.Println("stream closed")
+				utils.Sugar.Error("stream closed")
 				return err
 			}
 		}
