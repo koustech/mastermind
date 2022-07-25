@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"github.com/google/uuid"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
@@ -14,16 +15,18 @@ import (
 
 func main() {
 	utils.InitializeLoggers()
-
 	defer utils.SyncLogger()
 
-	if err := run(); err != nil {
+	var listenOn string
+	flag.StringVar(&listenOn, "a", "0.0.0.0:5678", "Mastermind's gRPC server address")
+	flag.Parse()
+
+	if err := run(listenOn); err != nil {
 		utils.Sugar.Fatal(err)
 	}
 }
 
-func run() error {
-	listenOn := "127.0.0.1:8080"
+func run(listenOn string) error {
 	listener, err := net.Listen("tcp", listenOn)
 	if err != nil {
 		return fmt.Errorf("failed to listen on %s: %w", listenOn, err)
