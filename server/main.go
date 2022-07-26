@@ -88,6 +88,9 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 			oldState := s.currentState
 
 			s.currentState, err = state.ResolveState(req.StateTransition, s.currentState)
+			if err != nil {
+				utils.Sugar.Warn(err)
+			}
 
 			utils.Sugar.Debug("calculated state")
 
