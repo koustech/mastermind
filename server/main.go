@@ -3,14 +3,15 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"net"
+	"sync"
+
 	"github.com/google/uuid"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/state"
 	"github.com/koustech/mastermind/utils"
 	"google.golang.org/grpc"
-	"io"
-	"net"
-	"sync"
 )
 
 func main() {
@@ -62,7 +63,6 @@ func NewMastermindServiceServer() *mastermindServiceServer {
 
 // UpdateState updates the current state according to the state transition table
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
-
 	utils.Sugar.Info("new connection")
 
 	// generate new sessionId and add channel
