@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/state"
+	"github.com/koustech/mastermind/telemetry"
 	"github.com/koustech/mastermind/utils"
 	"google.golang.org/grpc"
 )
@@ -19,8 +20,15 @@ func main() {
 	defer utils.SyncLogger()
 
 	var grpcAddress string
+	var mavlinkAddress string
 	flag.StringVar(&grpcAddress, "a", "0.0.0.0:5678", "Mastermind's gRPC server address")
+	flag.StringVar(&mavlinkAddress, "m", "127.0.0.1:14556", "The source MAVLink vehicle's ip address")
 	flag.Parse()
+
+	vehicleConnected := make(chan struct{}, 1)
+	go telemetry.GetTelem(vehicleConnected, mavlinkAddress)
+
+	<-vehicleConnected
 
 	if err := run(grpcAddress); err != nil {
 		utils.Sugar.Fatal(err)
