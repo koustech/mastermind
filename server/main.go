@@ -18,11 +18,11 @@ func main() {
 	utils.InitializeLoggers()
 	defer utils.SyncLogger()
 
-	var listenOn string
-	flag.StringVar(&listenOn, "a", "0.0.0.0:5678", "Mastermind's gRPC server address")
+	var grpcAddress string
+	flag.StringVar(&grpcAddress, "a", "0.0.0.0:5678", "Mastermind's gRPC server address")
 	flag.Parse()
 
-	if err := run(listenOn); err != nil {
+	if err := run(grpcAddress); err != nil {
 		utils.Sugar.Fatal(err)
 	}
 }
