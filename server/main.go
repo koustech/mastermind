@@ -48,7 +48,6 @@ type mastermindServiceServer struct {
 	pb.UnimplementedMastermindServiceServer
 	stateMu      sync.Mutex // protects currentState
 	currentState pb.MissionState
-	chansMu      sync.Mutex                                 // protects sessions
 	sessions     map[uuid.UUID]chan *pb.UpdateStateResponse // all active sessions
 }
 
