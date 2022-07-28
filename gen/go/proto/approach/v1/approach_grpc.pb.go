@@ -22,7 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ApproachServiceClient interface {
-	// rpc GetPlanes(GetPlanesRequest) returns (stream GetPlanesResponse); // TODO: fake data için yorum satırına alındı.
+	// A server-streaming endpoint
+	// Accepts a GetPlanesRequest and returns a stream of airplanes and their
+	// properties, and the selected plane id if it exists
 	GetPlanes(ctx context.Context, in *GetPlanesRequest, opts ...grpc.CallOption) (ApproachService_GetPlanesClient, error)
 }
 
@@ -70,7 +72,9 @@ func (x *approachServiceGetPlanesClient) Recv() (*GetPlanesResponse, error) {
 // All implementations should embed UnimplementedApproachServiceServer
 // for forward compatibility
 type ApproachServiceServer interface {
-	// rpc GetPlanes(GetPlanesRequest) returns (stream GetPlanesResponse); // TODO: fake data için yorum satırına alındı.
+	// A server-streaming endpoint
+	// Accepts a GetPlanesRequest and returns a stream of airplanes and their
+	// properties, and the selected plane id if it exists
 	GetPlanes(*GetPlanesRequest, ApproachService_GetPlanesServer) error
 }
 

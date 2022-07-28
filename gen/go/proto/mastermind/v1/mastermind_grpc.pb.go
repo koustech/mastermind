@@ -27,6 +27,10 @@ type MastermindServiceClient interface {
 	// sending UpdateStateResponses whenever a valid StateTransition is submitted
 	// by any client
 	UpdateState(ctx context.Context, opts ...grpc.CallOption) (MastermindService_UpdateStateClient, error)
+	GetTelemetry(ctx context.Context, in *GetTelemetryRequest, opts ...grpc.CallOption) (MastermindService_GetTelemetryClient, error)
+	// Returns a detailed telemetry response. SHOULD be used by services that
+	// interact with the competiiton server
+	GetDetailedTelemetry(ctx context.Context, in *GetDetailedTelemetryRequest, opts ...grpc.CallOption) (MastermindService_GetDetailedTelemetryClient, error)
 }
 
 type mastermindServiceClient struct {
@@ -68,6 +72,70 @@ func (x *mastermindServiceUpdateStateClient) Recv() (*UpdateStateResponse, error
 	return m, nil
 }
 
+func (c *mastermindServiceClient) GetTelemetry(ctx context.Context, in *GetTelemetryRequest, opts ...grpc.CallOption) (MastermindService_GetTelemetryClient, error) {
+	stream, err := c.cc.NewStream(ctx, &MastermindService_ServiceDesc.Streams[1], "/mastermind.v1.MastermindService/GetTelemetry", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &mastermindServiceGetTelemetryClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type MastermindService_GetTelemetryClient interface {
+	Recv() (*GetTelemetryResponse, error)
+	grpc.ClientStream
+}
+
+type mastermindServiceGetTelemetryClient struct {
+	grpc.ClientStream
+}
+
+func (x *mastermindServiceGetTelemetryClient) Recv() (*GetTelemetryResponse, error) {
+	m := new(GetTelemetryResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *mastermindServiceClient) GetDetailedTelemetry(ctx context.Context, in *GetDetailedTelemetryRequest, opts ...grpc.CallOption) (MastermindService_GetDetailedTelemetryClient, error) {
+	stream, err := c.cc.NewStream(ctx, &MastermindService_ServiceDesc.Streams[2], "/mastermind.v1.MastermindService/GetDetailedTelemetry", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &mastermindServiceGetDetailedTelemetryClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type MastermindService_GetDetailedTelemetryClient interface {
+	Recv() (*GetDetailedTelemetryResponse, error)
+	grpc.ClientStream
+}
+
+type mastermindServiceGetDetailedTelemetryClient struct {
+	grpc.ClientStream
+}
+
+func (x *mastermindServiceGetDetailedTelemetryClient) Recv() (*GetDetailedTelemetryResponse, error) {
+	m := new(GetDetailedTelemetryResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // MastermindServiceServer is the server API for MastermindService service.
 // All implementations should embed UnimplementedMastermindServiceServer
 // for forward compatibility
@@ -77,6 +145,10 @@ type MastermindServiceServer interface {
 	// sending UpdateStateResponses whenever a valid StateTransition is submitted
 	// by any client
 	UpdateState(MastermindService_UpdateStateServer) error
+	GetTelemetry(*GetTelemetryRequest, MastermindService_GetTelemetryServer) error
+	// Returns a detailed telemetry response. SHOULD be used by services that
+	// interact with the competiiton server
+	GetDetailedTelemetry(*GetDetailedTelemetryRequest, MastermindService_GetDetailedTelemetryServer) error
 }
 
 // UnimplementedMastermindServiceServer should be embedded to have forward compatible implementations.
@@ -85,6 +157,12 @@ type UnimplementedMastermindServiceServer struct {
 
 func (UnimplementedMastermindServiceServer) UpdateState(MastermindService_UpdateStateServer) error {
 	return status.Errorf(codes.Unimplemented, "method UpdateState not implemented")
+}
+func (UnimplementedMastermindServiceServer) GetTelemetry(*GetTelemetryRequest, MastermindService_GetTelemetryServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetTelemetry not implemented")
+}
+func (UnimplementedMastermindServiceServer) GetDetailedTelemetry(*GetDetailedTelemetryRequest, MastermindService_GetDetailedTelemetryServer) error {
+	return status.Errorf(codes.Unimplemented, "method GetDetailedTelemetry not implemented")
 }
 
 // UnsafeMastermindServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -124,6 +202,48 @@ func (x *mastermindServiceUpdateStateServer) Recv() (*UpdateStateRequest, error)
 	return m, nil
 }
 
+func _MastermindService_GetTelemetry_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetTelemetryRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(MastermindServiceServer).GetTelemetry(m, &mastermindServiceGetTelemetryServer{stream})
+}
+
+type MastermindService_GetTelemetryServer interface {
+	Send(*GetTelemetryResponse) error
+	grpc.ServerStream
+}
+
+type mastermindServiceGetTelemetryServer struct {
+	grpc.ServerStream
+}
+
+func (x *mastermindServiceGetTelemetryServer) Send(m *GetTelemetryResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _MastermindService_GetDetailedTelemetry_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(GetDetailedTelemetryRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(MastermindServiceServer).GetDetailedTelemetry(m, &mastermindServiceGetDetailedTelemetryServer{stream})
+}
+
+type MastermindService_GetDetailedTelemetryServer interface {
+	Send(*GetDetailedTelemetryResponse) error
+	grpc.ServerStream
+}
+
+type mastermindServiceGetDetailedTelemetryServer struct {
+	grpc.ServerStream
+}
+
+func (x *mastermindServiceGetDetailedTelemetryServer) Send(m *GetDetailedTelemetryResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // MastermindService_ServiceDesc is the grpc.ServiceDesc for MastermindService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -137,6 +257,16 @@ var MastermindService_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _MastermindService_UpdateState_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "GetTelemetry",
+			Handler:       _MastermindService_GetTelemetry_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "GetDetailedTelemetry",
+			Handler:       _MastermindService_GetDetailedTelemetry_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "proto/mastermind/v1/mastermind.proto",
