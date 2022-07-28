@@ -29,7 +29,7 @@ func GetTelem(vehicleConnected chan<- struct{}, address string) {
 			switch evt.(type) {
 			case *gomavlib.EventChannelOpen:
 				vehicleConnected <- struct{}{}
-				utils.Sugar.Infof("received heartbeat from %s", address)
+				utils.Logger.Infof("received heartbeat from %s", address)
 				return
 			}
 		}
@@ -42,7 +42,7 @@ func GetTelem(vehicleConnected chan<- struct{}, address string) {
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
 			switch msg := frm.Message().(type) {
 			case *ardupilotmega.MessageAttitude:
-				utils.Sugar.Debugf("%+v\n", msg)
+				utils.Logger.Debugf("%+v\n", msg)
 			}
 		}
 	}
