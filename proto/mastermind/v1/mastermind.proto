@@ -33,12 +33,60 @@ message UpdateStateResponse {
   MissionState current_state = 3;
 }
 
-service MastermindService {
+message GetTelemetryRequest {}
+message GetTelemetryResponse {
+  uint32 time_boot_ms = 1; // Timestamp of last message in milliseconds
+  int32 lat = 2;           // Latitude in degrees * 10^7
+  int32 lon = 3;           // Longitude in degrees * 10^7
+  int32 relative_alt = 4;  // Altitude above ground in millimeters
+  float roll = 5;          // Roll angle (-pi..+pi)
+  float pitch = 6;         // Pitch angle (-pi..+pi)
+  float yaw = 7;           // Yaw / heading angle from north (-pi..+pi)
+  float airspeed = 8;      // Airspeed in m/s
+  float groundspeed = 9;   // Groundspeed in m/s
+}
 
+// Target is a target being locked onto by the UAV
+message Target {
+  uint32 x = 1;      // x coordinate of center of bounding box in pixels
+  uint32 y = 2;      // y coordinate of center of bounding box in pixels
+  uint32 width = 3;  // width of target bounding box in pixels
+  uint32 height = 4; // height of target bounding box in pixels
+}
+
+message GetDetailedTelemetryRequest {}
+message GetDetailedTelemetryResponse {
+  uint32 time_boot_ms = 1; // Timestamp of last message in milliseconds
+  int32 lat = 2;           // Latitude in degrees * 10^7
+  int32 lon = 3;           // Longitude in degrees * 10^7
+  int32 relative_alt = 4;  // Altitude above ground in millimeters
+  float roll = 5;          // Roll angle (-pi..+pi)
+  float pitch = 6;         // Pitch angle (-pi..+pi)
+  float yaw = 7;           // Yaw / heading angle from north (-pi..+pi)
+  float airspeed = 8;      // Airspeed in m/s
+  float groundspeed = 9;   // Groundspeed in m/s
+  int32 battery = 10;      // Remaining battery energy. Values: [0-100], -1:
+                           // autopilot does not estimate the remaining battery.
+  bool autonomous = 11;    // True if the UAV is in a mode being controlled
+                           // autonomously, False otherwise
+  optional Target target = 12; // Target being locked on by the UAV
+}
+
+service MastermindService {
   // A bidirectional stream
   // Accepts a stream of UpdateStateRequests during the competition, while
   // sending UpdateStateResponses whenever a valid StateTransition is submitted
   // by any client
   rpc UpdateState(stream UpdateStateRequest)
       returns (stream UpdateStateResponse);
+
+  // Returns a normal telemetry stream when activated. Should be used by
+  // services that don't interact with the competition server
+
+  rpc GetTelemetry(GetTelemetryRequest) returns (stream GetTelemetryResponse);
+
+  // Returns a detailed telemetry response. SHOULD be used by services that
+  // interact with the competiiton server
+  rpc GetDetailedTelemetry(GetDetailedTelemetryRequest)
+      returns (stream GetDetailedTelemetryResponse);
 }
