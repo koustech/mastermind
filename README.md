@@ -21,7 +21,7 @@ Bağlı olan servislerin sistemin hangi aşamada olduğundan haberdar olabilmele
 #### UpdateState(stream UpdateStateRequest) returns (stream UpdateStateResponse)
 UpdateState bi-directional RPC üzerinden istemci servislerden durum geçişleri alırken, onlara yeni hesaplanan durumu da gönderecektir. Unary yerine bi-directional olmasının nedeni, durum güncellemesinin sadece gönderen servis değil, diğer servislerden de kaynaklı olabilmesinden dolayıdır. Örn.
 
-Servis A bir durum güncellemesini gönderdiği zaman, Servis A, Servis B, ve Servis C'ye yeni durumu içeren bir UpdateStateResponse gönderilecek.
+Servis A bir UpdateStateRequest'ı gönderdiği zaman, Servis A, Servis B, ve Servis C'ye yeni durumu içeren bir UpdateStateResponse gönderilecek.
 
 
 ## Quickstart
