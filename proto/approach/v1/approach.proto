@@ -43,7 +43,5 @@ service ApproachService {
   // A server-streaming endpoint
   // Accepts a GetPlanesRequest and returns a stream of airplanes and their
   // properties, and the selected plane id if it exists
-  
-  // rpc GetPlanes(GetPlanesRequest) returns (stream GetPlanesResponse); // TODO: fake data için yorum satırına alındı.
   rpc GetPlanes(GetPlanesRequest) returns (stream GetPlanesResponse);
 }
