@@ -7,6 +7,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/aler9/gomavlib"
 	"github.com/google/uuid"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/state"
@@ -25,21 +26,20 @@ func main() {
 	flag.StringVar(&mavlinkAddress, "m", "127.0.0.1:14556", "The source MAVLink vehicle's ip address")
 	flag.Parse()
 
-	vehicleConnected := make(chan struct{}, 1)
-	go telemetry.GetTelem(vehicleConnected, mavlinkAddress)
+	node := telemetry.ConnectToVehicle(mavlinkAddress)
+	defer node.Close()
 
-	<-vehicleConnected
-
-	if err := run(grpcAddress); err != nil {
+	if err := run(grpcAddress, node); err != nil {
 		u.Logger.Fatal(err)
 	}
 }
 
-func run(listenOn string) error {
+func run(listenOn string, node *gomavlib.Node) error {
 	listener, err := net.Listen("tcp", listenOn)
 	if err != nil {
 		return fmt.Errorf("failed to listen on %s: %w", listenOn, err)
 	}
+	
 
 	gRPCServer := grpc.NewServer()
 	pb.RegisterMastermindServiceServer(gRPCServer, NewMastermindServiceServer())
