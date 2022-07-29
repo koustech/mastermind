@@ -8,8 +8,8 @@ import (
 	"sync"
 
 	"github.com/aler9/gomavlib"
-	evbus "github.com/asaskevich/EventBus"
 	"github.com/google/uuid"
+	evbus "github.com/ispringtech/eventbus"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/state"
 
@@ -17,6 +17,18 @@ import (
 	u "github.com/koustech/mastermind/utils"
 	"google.golang.org/grpc"
 )
+
+const (
+	eventNewState = evbus.EventID("new_state")
+)
+
+type newStateEvent struct {
+	response *pb.UpdateStateResponse
+}
+
+func (e *newStateEvent) EventID() evbus.EventID {
+	return eventNewState
+}
 
 func main() {
 	u.InitializeLoggers()
@@ -60,7 +72,7 @@ type mastermindServiceServer struct {
 	currentState        pb.MissionState
 	stateResponses      map[uuid.UUID]chan *pb.UpdateStateResponse  // stateResponses for all active sessison
 	telemetryResponses  map[uuid.UUID]chan *pb.GetTelemetryResponse // GetTelemetryResponses for all active sessison
-	stateUpdateHandlers map[uuid.UUID]func(*pb.UpdateStateResponse) // stateUpdateFuncs for all active sessison
+	stateUpdateHandlers map[uuid.UUID]evbus.Subscription            // stateUpdateFuncs for all active sessison
 	stateBus            evbus.Bus                                   // event notifier for state changes
 }
 
@@ -69,7 +81,7 @@ func NewMastermindServiceServer() *mastermindServiceServer {
 	stateChans := make(map[uuid.UUID]chan *pb.UpdateStateResponse)
 	telemetryChans := make(map[uuid.UUID]chan *pb.GetTelemetryResponse)
 	stateBus := evbus.New()
-	stateUpdateHandlers := make(map[uuid.UUID]func(*pb.UpdateStateResponse)) // handlers for every stateupdate func
+	stateUpdateHandlers := make(map[uuid.UUID]evbus.Subscription) // handlers for every stateupdate func
 	return &mastermindServiceServer{
 		currentState:        pb.MissionState_MISSION_STATE_APPROACH,
 		stateResponses:      stateChans,
@@ -125,12 +137,6 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 	// 	}
 	// }
 
-	s.stateUpdateHandlers[sessionId] = func(response *pb.UpdateStateResponse) {
-		if err := stream.Send(response); err != nil {
-			u.Logger.Error("stream closed")
-			errChan <- err
-		}
-	}
 	cleanup := func() {
 		// u.Logger.Debugf("deleting channel for sessionId %v...", sessionId)
 		// close(s.stateResponses[sessionId])
@@ -139,13 +145,22 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 		// u.Logger.Debugf("removing sessionId %v from sessions Map...", sessionId)
 		// delete(s.stateResponses, sessionId)
 		// u.Logger.Infof("unsubscribed sessionId %v from event bus", sessionId)
-		s.stateBus.Unsubscribe("state_update:send_new_state", s.stateUpdateHandlers[sessionId])
+		s.stateBus.Unsubscribe(s.stateUpdateHandlers[sessionId])
 		delete(s.stateUpdateHandlers, sessionId)
 		u.Logger.Infof("unsubscribed sessionId %v from event bus", sessionId)
 	}
 
 	defer cleanup()
-	s.stateBus.Subscribe("state_update:send_new_state", s.stateUpdateHandlers[sessionId])
+	s.stateUpdateHandlers[sessionId] = s.stateBus.Subscribe(eventNewState, func(e evbus.Event) {
+		se := e.(*newStateEvent)
+		response := se.response
+		if err := stream.Send(response); err != nil {
+			u.Logger.Error("stream closed")
+			errChan <- err
+		}
+		u.Logger.Debugf("sent state response through %v channel", sessionId)
+	})
+
 	// for {
 	// 	select {
 	// 	case <-eof:
@@ -173,6 +188,8 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 		u.Logger.Debugf("request received on session %v", sessionId)
 
 		s.stateMu.Lock()
+		u.Logger.Debugf("state mutex locked")
+
 		oldState := s.currentState
 
 		s.currentState, err = state.ResolveState(req.StateTransition, s.currentState)
@@ -180,15 +197,14 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 			u.Logger.Warn(err)
 		}
 
-		u.Logger.Debug("calculated state")
-
 		// for service, ch := range s.stateResponses {
 		// 	u.Logger.Debugf("sending state response through %v channel...", service)
 		// 	ch <- &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}
 		// 	u.Logger.Debugf("sent state response through %v channel", service)
 		// }
+		u.Logger.Infof("%v -> %v", oldState, s.currentState)
 
-		s.stateBus.Publish("state_update:send_new_state", &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState})
+		s.stateBus.Publish(&newStateEvent{response: &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}})
 
 		s.stateMu.Unlock()
 		u.Logger.Debugf("state mutex unlocked")

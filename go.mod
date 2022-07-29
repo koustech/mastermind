@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/aler9/gomavlib v0.0.0-20220722052739-8f67720006ed
-	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/google/uuid v1.1.2
+	github.com/ispringtech/eventbus v0.0.0-20190701203509-53c525703608
 	github.com/stretchr/testify v1.8.0
 	go.uber.org/zap v1.21.0
 	google.golang.org/grpc v1.48.0
