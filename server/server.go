@@ -14,18 +14,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-const (
-	EventNewState = evbus.EventID("new_state")
-)
-
-type NewStateEvent struct {
-	response *pb.UpdateStateResponse
-}
-
-func (e *NewStateEvent) EventID() evbus.EventID {
-	return EventNewState
-}
-
 func Run(listenOn string, node *gomavlib.Node) error {
 	listener, err := net.Listen("tcp", listenOn)
 	if err != nil {

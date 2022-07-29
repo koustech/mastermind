@@ -11,6 +11,18 @@ import (
 	u "github.com/koustech/mastermind/utils"
 )
 
+const (
+	EventNewState = evbus.EventID("new_state")
+)
+
+type NewStateEvent struct {
+	response *pb.UpdateStateResponse
+}
+
+func (e *NewStateEvent) EventID() evbus.EventID {
+	return EventNewState
+}
+
 // UpdateState updates the current state according to the state transition table
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
 	// generate new sessionId and add channel
