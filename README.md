@@ -14,7 +14,7 @@ TODO
 releaseteki programı indirip terminal üzerinden çalıştırılabilir
 
 ```
-go run server/main.go
+go run main/main.go
 ```
 
 
