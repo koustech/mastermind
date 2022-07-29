@@ -68,24 +68,19 @@ func run(listenOn string, node *gomavlib.Node) error {
 // mastermindServiceServer implements the MastermindService API.
 type mastermindServiceServer struct {
 	pb.UnimplementedMastermindServiceServer
-	stateMu             sync.Mutex // protects currentState
-	currentState        pb.MissionState
-	stateResponses      map[uuid.UUID]chan *pb.UpdateStateResponse  // stateResponses for all active sessison
-	telemetryResponses  map[uuid.UUID]chan *pb.GetTelemetryResponse // GetTelemetryResponses for all active sessison
-	stateUpdateHandlers map[uuid.UUID]evbus.Subscription            // stateUpdateFuncs for all active sessison
-	stateBus            evbus.Bus                                   // event notifier for state changes
+	stateMu      sync.Mutex // protects currentState
+	currentState pb.MissionState
+
+	stateUpdateHandlers map[uuid.UUID]evbus.Subscription // stateUpdateFuncs for all active sessison
+	stateBus            evbus.Bus                        // event notifier for state changes
 }
 
 func NewMastermindServiceServer() *mastermindServiceServer {
 	// initializes state and allocates channels into empty channels slice
-	stateChans := make(map[uuid.UUID]chan *pb.UpdateStateResponse)
-	telemetryChans := make(map[uuid.UUID]chan *pb.GetTelemetryResponse)
 	stateBus := evbus.New()
 	stateUpdateHandlers := make(map[uuid.UUID]evbus.Subscription) // handlers for every stateupdate func
 	return &mastermindServiceServer{
 		currentState:        pb.MissionState_MISSION_STATE_APPROACH,
-		stateResponses:      stateChans,
-		telemetryResponses:  telemetryChans,
 		stateBus:            stateBus,
 		stateUpdateHandlers: stateUpdateHandlers,
 	}
@@ -93,61 +88,16 @@ func NewMastermindServiceServer() *mastermindServiceServer {
 
 // UpdateState updates the current state according to the state transition table
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
-	u.Logger.Info("new connection")
-
 	// generate new sessionId and add channel
 	sessionId := uuid.New()
-	// s.stateResponses[sessionId] = make(chan *pb.UpdateStateResponse)
+	u.Logger.Info("new connection for session: ", sessionId)
 
-	// eof := make(chan bool)
 	errChan := make(chan error)
-	// receiverThread := func() {
-	// 	for {
-	// 		req, err := stream.Recv()
-	// 		if err == io.EOF {
-	// 			eof <- true
-	// 			return
-	// 		}
-	// 		if err != nil {
-	// 			errChan <- err
-	// 			return
-	// 		}
-	// 		u.Logger.Debugf("request received on session %v", sessionId)
-
-	// 		s.stateMu.Lock()
-	// 		oldState := s.currentState
-
-	// 		s.currentState, err = state.ResolveState(req.StateTransition, s.currentState)
-	// 		if err != nil {
-	// 			u.Logger.Warn(err)
-	// 		}
-
-	// 		u.Logger.Debug("calculated state")
-
-	// 		// for service, ch := range s.stateResponses {
-	// 		// 	u.Logger.Debugf("sending state response through %v channel...", service)
-	// 		// 	ch <- &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}
-	// 		// 	u.Logger.Debugf("sent state response through %v channel", service)
-	// 		// }
-
-	// 		s.stateBus.Publish("state_update:send_new_state", &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState})
-
-	// 		s.stateMu.Unlock()
-	// 		u.Logger.Debugf("state mutex unlocked")
-	// 	}
-	// }
 
 	cleanup := func() {
-		// u.Logger.Debugf("deleting channel for sessionId %v...", sessionId)
-		// close(s.stateResponses[sessionId])
-		// u.Logger.Debugf("deleted channel for sessionId %v", sessionId)
-
-		// u.Logger.Debugf("removing sessionId %v from sessions Map...", sessionId)
-		// delete(s.stateResponses, sessionId)
-		// u.Logger.Infof("unsubscribed sessionId %v from event bus", sessionId)
 		s.stateBus.Unsubscribe(s.stateUpdateHandlers[sessionId])
 		delete(s.stateUpdateHandlers, sessionId)
-		u.Logger.Infof("unsubscribed sessionId %v from event bus", sessionId)
+		u.Logger.Infof("unsubscribed session: %v from event bus", sessionId)
 	}
 
 	defer cleanup()
@@ -161,15 +111,6 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 		u.Logger.Debugf("sent state response through %v channel", sessionId)
 	})
 
-	// for {
-	// 	select {
-	// 	case <-eof:
-	// 		return nil
-	// 	case err := <-errChan:
-	// 		return err
-	// 	}
-	// }
-	// receiverThread()
 	for {
 		select {
 		case err := <-errChan:
@@ -196,12 +137,6 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 		if err != nil {
 			u.Logger.Warn(err)
 		}
-
-		// for service, ch := range s.stateResponses {
-		// 	u.Logger.Debugf("sending state response through %v channel...", service)
-		// 	ch <- &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}
-		// 	u.Logger.Debugf("sent state response through %v channel", service)
-		// }
 		u.Logger.Infof("%v -> %v", oldState, s.currentState)
 
 		s.stateBus.Publish(&newStateEvent{response: &pb.UpdateStateResponse{OldState: oldState, StateTransition: req.StateTransition, CurrentState: s.currentState}})
