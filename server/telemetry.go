@@ -66,7 +66,6 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 					},
 				})
 			}
-
 		}
 	}
 }
