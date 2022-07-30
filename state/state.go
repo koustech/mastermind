@@ -10,10 +10,10 @@ import (
 var ErrInvalidStateTransition = errors.New("current state has no defined behavior for requested state transition")
 
 // ResolveState resolves the MissionState according to the current MissionState and StateTransition given as input
-func ResolveState(state_transition StateTransition, current_state MissionState) (MissionState, error) {
-	switch current_state {
+func ResolveState(stateTransition StateTransition, currentState MissionState) (MissionState, error) {
+	switch currentState {
 	case MissionState_MISSION_STATE_APPROACH:
-		switch state_transition {
+		switch stateTransition {
 		case StateTransition_STATE_TRANSITION_TARGET_APPROACHED:
 			return MissionState_MISSION_STATE_FOLLOWING, nil
 		case StateTransition_STATE_TRANSITION_MODE_KAMIKAZE_SELECTED:
@@ -22,7 +22,7 @@ func ResolveState(state_transition StateTransition, current_state MissionState) 
 			return MissionState_MISSION_STATE_APPROACH, ErrInvalidStateTransition
 		}
 	case MissionState_MISSION_STATE_FOLLOWING:
-		switch state_transition {
+		switch stateTransition {
 		case StateTransition_STATE_TRANSITION_LOCK_FAILED:
 			return MissionState_MISSION_STATE_APPROACH, nil
 		case StateTransition_STATE_TRANSITION_LOCK_SUCCESS:
@@ -33,7 +33,7 @@ func ResolveState(state_transition StateTransition, current_state MissionState) 
 			return MissionState_MISSION_STATE_FOLLOWING, ErrInvalidStateTransition
 		}
 	case MissionState_MISSION_STATE_KAMIKAZE:
-		switch state_transition {
+		switch stateTransition {
 		case StateTransition_STATE_TRANSITION_QR_FAILED:
 			return MissionState_MISSION_STATE_KAMIKAZE, nil
 		case StateTransition_STATE_TRANSITION_QR_SUCCESS:
