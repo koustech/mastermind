@@ -31,32 +31,3 @@ func ConnectToVehicle(address string) *gomavlib.Node {
 	awaitHeartbeat()
 	return node
 }
-
-// func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
-// 	vfrHud := ardupilotmega.MessageVfrHud{}
-// 	attitude := ardupilotmega.MessageAttitude{}
-// 	globalPositionInt := ardupilotmega.MessageGlobalPositionInt{}
-
-// 	updateFlag := true
-// 	// print every message we receive
-// 	for evt := range node.Events() {
-// 		updateFlag = true
-
-// 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
-// 			switch msg := frm.Message().(type) {
-// 			case *ardupilotmega.MessageAttitude:
-// 				attitude = *msg
-// 			case *ardupilotmega.MessageVfrHud:
-// 				vfrHud = *msg
-// 			case *ardupilotmega.MessageGlobalPositionInt:
-// 				globalPositionInt = *msg
-// 			default:
-// 				updateFlag = false
-// 			}
-
-// 			if updateFlag {
-// 				bus.Publish(&NewTelemetryEvent)
-// 			}
-// 		}
-// 	}
-// }
