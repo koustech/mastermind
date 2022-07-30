@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/server/main.go",
+            "program": "${workspaceFolder}/main/main.go",
         },
         {
             "name": "Test Package",
