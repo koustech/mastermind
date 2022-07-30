@@ -1,5 +1,5 @@
 version: v1
-name: buf.build/alielbashir/mastermind
+name: buf.build/alielbashir/fighterUAV
 breaking:
   use:
     - FILE

@@ -26,10 +26,10 @@ UpdateState bi-directional RPC üzerinden istemci servislerden durum geçişleri
 
 ## Quickstart
 
-```
+```sh
 git clone https://github.com/koustech/mastermind.git
 cd mastermind
-go run server/main.go -a 127.0.0.1:5678
+go run main/main.go -a 127.0.0.1:5678
 ```
 
 
