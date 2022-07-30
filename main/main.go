@@ -19,7 +19,6 @@ func main() {
 	flag.Parse()
 
 	node := telemetry.ConnectToVehicle(mavlinkAddress)
-	// node := &gomavlib.Node{}
 	defer node.Close()
 
 	if err := server.Run(grpcAddress, node); err != nil {

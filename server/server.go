@@ -21,7 +21,11 @@ func Run(listenOn string, node *gomavlib.Node) error {
 	}
 
 	gRPCServer := grpc.NewServer()
-	pb.RegisterMastermindServiceServer(gRPCServer, NewMastermindServiceServer())
+	serviceServer := NewMastermindServiceServer()
+	pb.RegisterMastermindServiceServer(gRPCServer, serviceServer)
+
+	go GetTelem(serviceServer.stateBus, node)
+
 	u.Logger.Infof("Listening on %v", listenOn)
 	if err := gRPCServer.Serve(listener); err != nil {
 		return fmt.Errorf("failed to serve gRPC server: %w", err)
@@ -37,16 +41,19 @@ type mastermindServiceServer struct {
 	currentState pb.MissionState
 
 	stateUpdateHandlers map[uuid.UUID]evbus.Subscription // stateUpdateFuncs for all active sessison
-	stateBus            evbus.Bus                        // event notifier for state changes
+	telemUpdateHandlers map[uuid.UUID]evbus.Subscription
+	stateBus            evbus.Bus // event notifier for state changes
 }
 
 func NewMastermindServiceServer() *mastermindServiceServer {
 	// initializes state and allocates channels into empty channels slice
 	stateBus := evbus.New()
 	stateUpdateHandlers := make(map[uuid.UUID]evbus.Subscription) // handlers for every stateupdate func
+	telemUpdateHandlers := make(map[uuid.UUID]evbus.Subscription) // handlers for every stateupdate func
 	return &mastermindServiceServer{
 		currentState:        pb.MissionState_MISSION_STATE_APPROACH,
 		stateBus:            stateBus,
 		stateUpdateHandlers: stateUpdateHandlers,
+		telemUpdateHandlers: telemUpdateHandlers,
 	}
 }
