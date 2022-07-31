@@ -14,7 +14,7 @@ const (
 )
 
 type NewTelemetryEvent struct {
-	response *pb.GetTelemetryResponse
+	response *pb.GetDetailedTelemetryResponse
 }
 
 func (e *NewTelemetryEvent) EventID() evbus.EventID {
@@ -26,6 +26,8 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 	attitude := ardupilotmega.MessageAttitude{}
 	globalPositionInt := ardupilotmega.MessageGlobalPositionInt{}
 	navControllerOutput := ardupilotmega.MessageNavControllerOutput{}
+	batteryStatus := ardupilotmega.MessageBatteryStatus{}
+
 	var timeBootMs uint32
 
 	var updateFlag bool
@@ -45,14 +47,16 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 				timeBootMs = msg.TimeBootMs
 			case *ardupilotmega.MessageNavControllerOutput:
 				navControllerOutput = *msg
-				u.Logger.Debug(navControllerOutput)
+			case *ardupilotmega.MessageBatteryStatus:
+				batteryStatus = *msg
+				updateFlag = false // Don't want to increase message sending frequency just for battery
 			default:
 				updateFlag = false
 			}
 
 			if updateFlag {
 				bus.Publish(&NewTelemetryEvent{
-					response: &pb.GetTelemetryResponse{
+					response: &pb.GetDetailedTelemetryResponse{
 						TimeBootMs:  timeBootMs,
 						Lat:         globalPositionInt.Lat,
 						Lon:         globalPositionInt.Lon,
@@ -63,6 +67,9 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 						Airspeed:    vfrHud.Airspeed,
 						Groundspeed: vfrHud.Groundspeed,
 						WpDist:      uint32(navControllerOutput.WpDist),
+						Battery:     int32(batteryStatus.BatteryRemaining),
+						Autonomous:  false, // FIXME: change from false to according to mode
+						Target:      nil,
 					},
 				})
 			}
@@ -72,6 +79,42 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 
 // GetTelemetry sends a stream of telemetry to all clients
 func (s *mastermindServiceServer) GetTelemetry(_ *pb.GetTelemetryRequest, stream pb.MastermindService_GetTelemetryServer) error {
+	// generate new sessionId and add channel
+	sessionId := uuid.New()
+	u.Logger.Info("new connection for session: ", sessionId)
+
+	errChan := make(chan error)
+
+	s.telemUpdateHandlers[sessionId] = s.stateBus.Subscribe(EventNewTelemetry, func(e evbus.Event) {
+		se := e.(*NewTelemetryEvent)
+		// change detailed telemetry to normal telem response
+		response := &pb.GetTelemetryResponse{
+			TimeBootMs:  se.response.TimeBootMs,
+			Lat:         se.response.Lat,
+			Lon:         se.response.Lon,
+			RelativeAlt: se.response.RelativeAlt,
+			Roll:        se.response.Roll,
+			Pitch:       se.response.Pitch,
+			Yaw:         se.response.Yaw,
+			Airspeed:    se.response.Airspeed,
+			Groundspeed: se.response.Groundspeed,
+			WpDist:      se.response.WpDist,
+		}
+		if err := stream.Send(response); err != nil {
+			s.stateBus.Unsubscribe(s.telemUpdateHandlers[sessionId])
+			delete(s.telemUpdateHandlers, sessionId)
+			u.Logger.Infof("unsubscribed telem session: %v from event bus", sessionId)
+
+			errChan <- err
+		}
+	})
+
+	<-errChan
+	return nil
+}
+
+// GetDetailedTelemetry sends a stream of detailed telemetry to all clients
+func (s *mastermindServiceServer) GetDetailedTelemetry(_ *pb.GetDetailedTelemetryRequest, stream pb.MastermindService_GetDetailedTelemetryServer) error {
 	// generate new sessionId and add channel
 	sessionId := uuid.New()
 	u.Logger.Info("new connection for session: ", sessionId)
