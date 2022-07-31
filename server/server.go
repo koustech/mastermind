@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"google.golang.org/grpc/reflection"
 	"net"
 	"sync"
 
@@ -23,6 +24,7 @@ func Run(listenOn string, node *gomavlib.Node) error {
 	gRPCServer := grpc.NewServer()
 	serviceServer := NewMastermindServiceServer()
 	pb.RegisterMastermindServiceServer(gRPCServer, serviceServer)
+	reflection.Register(gRPCServer)
 
 	go GetTelem(serviceServer.stateBus, node)
 
