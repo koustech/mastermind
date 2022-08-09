@@ -31,6 +31,12 @@ type MastermindServiceClient interface {
 	// Returns a detailed telemetry response. SHOULD be used by services that
 	// interact with the competiiton server
 	GetDetailedTelemetry(ctx context.Context, in *GetDetailedTelemetryRequest, opts ...grpc.CallOption) (MastermindService_GetDetailedTelemetryClient, error)
+	// SetPIDLevel sets the PID level for the plane
+	SetPIDLevel(ctx context.Context, in *SetPIDLevelRequest, opts ...grpc.CallOption) (*SetPIDLevelResponse, error)
+	// SetSpeed sets the plane's airspeed in m/s
+	SetSpeed(ctx context.Context, in *SetSpeedRequest, opts ...grpc.CallOption) (*SetSpeedResponse, error)
+	// GotoWaypoint commands the plane to go to specified waypoint
+	GotoWaypoint(ctx context.Context, in *GotoWaypointRequest, opts ...grpc.CallOption) (*GotoWaypointResponse, error)
 }
 
 type mastermindServiceClient struct {
@@ -136,6 +142,33 @@ func (x *mastermindServiceGetDetailedTelemetryClient) Recv() (*GetDetailedTeleme
 	return m, nil
 }
 
+func (c *mastermindServiceClient) SetPIDLevel(ctx context.Context, in *SetPIDLevelRequest, opts ...grpc.CallOption) (*SetPIDLevelResponse, error) {
+	out := new(SetPIDLevelResponse)
+	err := c.cc.Invoke(ctx, "/mastermind.v1.MastermindService/SetPIDLevel", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mastermindServiceClient) SetSpeed(ctx context.Context, in *SetSpeedRequest, opts ...grpc.CallOption) (*SetSpeedResponse, error) {
+	out := new(SetSpeedResponse)
+	err := c.cc.Invoke(ctx, "/mastermind.v1.MastermindService/SetSpeed", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mastermindServiceClient) GotoWaypoint(ctx context.Context, in *GotoWaypointRequest, opts ...grpc.CallOption) (*GotoWaypointResponse, error) {
+	out := new(GotoWaypointResponse)
+	err := c.cc.Invoke(ctx, "/mastermind.v1.MastermindService/GotoWaypoint", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MastermindServiceServer is the server API for MastermindService service.
 // All implementations should embed UnimplementedMastermindServiceServer
 // for forward compatibility
@@ -149,6 +182,12 @@ type MastermindServiceServer interface {
 	// Returns a detailed telemetry response. SHOULD be used by services that
 	// interact with the competiiton server
 	GetDetailedTelemetry(*GetDetailedTelemetryRequest, MastermindService_GetDetailedTelemetryServer) error
+	// SetPIDLevel sets the PID level for the plane
+	SetPIDLevel(context.Context, *SetPIDLevelRequest) (*SetPIDLevelResponse, error)
+	// SetSpeed sets the plane's airspeed in m/s
+	SetSpeed(context.Context, *SetSpeedRequest) (*SetSpeedResponse, error)
+	// GotoWaypoint commands the plane to go to specified waypoint
+	GotoWaypoint(context.Context, *GotoWaypointRequest) (*GotoWaypointResponse, error)
 }
 
 // UnimplementedMastermindServiceServer should be embedded to have forward compatible implementations.
@@ -163,6 +202,15 @@ func (UnimplementedMastermindServiceServer) GetTelemetry(*GetTelemetryRequest, M
 }
 func (UnimplementedMastermindServiceServer) GetDetailedTelemetry(*GetDetailedTelemetryRequest, MastermindService_GetDetailedTelemetryServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDetailedTelemetry not implemented")
+}
+func (UnimplementedMastermindServiceServer) SetPIDLevel(context.Context, *SetPIDLevelRequest) (*SetPIDLevelResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetPIDLevel not implemented")
+}
+func (UnimplementedMastermindServiceServer) SetSpeed(context.Context, *SetSpeedRequest) (*SetSpeedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetSpeed not implemented")
+}
+func (UnimplementedMastermindServiceServer) GotoWaypoint(context.Context, *GotoWaypointRequest) (*GotoWaypointResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GotoWaypoint not implemented")
 }
 
 // UnsafeMastermindServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -244,13 +292,80 @@ func (x *mastermindServiceGetDetailedTelemetryServer) Send(m *GetDetailedTelemet
 	return x.ServerStream.SendMsg(m)
 }
 
+func _MastermindService_SetPIDLevel_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetPIDLevelRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MastermindServiceServer).SetPIDLevel(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mastermind.v1.MastermindService/SetPIDLevel",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MastermindServiceServer).SetPIDLevel(ctx, req.(*SetPIDLevelRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MastermindService_SetSpeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetSpeedRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MastermindServiceServer).SetSpeed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mastermind.v1.MastermindService/SetSpeed",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MastermindServiceServer).SetSpeed(ctx, req.(*SetSpeedRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MastermindService_GotoWaypoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GotoWaypointRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MastermindServiceServer).GotoWaypoint(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mastermind.v1.MastermindService/GotoWaypoint",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MastermindServiceServer).GotoWaypoint(ctx, req.(*GotoWaypointRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MastermindService_ServiceDesc is the grpc.ServiceDesc for MastermindService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var MastermindService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "mastermind.v1.MastermindService",
 	HandlerType: (*MastermindServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SetPIDLevel",
+			Handler:    _MastermindService_SetPIDLevel_Handler,
+		},
+		{
+			MethodName: "SetSpeed",
+			Handler:    _MastermindService_SetSpeed_Handler,
+		},
+		{
+			MethodName: "GotoWaypoint",
+			Handler:    _MastermindService_GotoWaypoint_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "UpdateState",

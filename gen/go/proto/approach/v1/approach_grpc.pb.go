@@ -26,6 +26,8 @@ type ApproachServiceClient interface {
 	// Accepts a GetPlanesRequest and returns a stream of airplanes and their
 	// properties, and the selected plane id if it exists
 	GetPlanes(ctx context.Context, in *GetPlanesRequest, opts ...grpc.CallOption) (ApproachService_GetPlanesClient, error)
+	// ApproachPlane sends a command to approach the plane with specified ID
+	ApproachPlane(ctx context.Context, in *ApproachPlaneRequest, opts ...grpc.CallOption) (*ApproachPlaneResponse, error)
 }
 
 type approachServiceClient struct {
@@ -68,6 +70,15 @@ func (x *approachServiceGetPlanesClient) Recv() (*GetPlanesResponse, error) {
 	return m, nil
 }
 
+func (c *approachServiceClient) ApproachPlane(ctx context.Context, in *ApproachPlaneRequest, opts ...grpc.CallOption) (*ApproachPlaneResponse, error) {
+	out := new(ApproachPlaneResponse)
+	err := c.cc.Invoke(ctx, "/approach.v1.ApproachService/ApproachPlane", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ApproachServiceServer is the server API for ApproachService service.
 // All implementations should embed UnimplementedApproachServiceServer
 // for forward compatibility
@@ -76,6 +87,8 @@ type ApproachServiceServer interface {
 	// Accepts a GetPlanesRequest and returns a stream of airplanes and their
 	// properties, and the selected plane id if it exists
 	GetPlanes(*GetPlanesRequest, ApproachService_GetPlanesServer) error
+	// ApproachPlane sends a command to approach the plane with specified ID
+	ApproachPlane(context.Context, *ApproachPlaneRequest) (*ApproachPlaneResponse, error)
 }
 
 // UnimplementedApproachServiceServer should be embedded to have forward compatible implementations.
@@ -84,6 +97,9 @@ type UnimplementedApproachServiceServer struct {
 
 func (UnimplementedApproachServiceServer) GetPlanes(*GetPlanesRequest, ApproachService_GetPlanesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetPlanes not implemented")
+}
+func (UnimplementedApproachServiceServer) ApproachPlane(context.Context, *ApproachPlaneRequest) (*ApproachPlaneResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ApproachPlane not implemented")
 }
 
 // UnsafeApproachServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -118,13 +134,36 @@ func (x *approachServiceGetPlanesServer) Send(m *GetPlanesResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _ApproachService_ApproachPlane_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ApproachPlaneRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApproachServiceServer).ApproachPlane(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/approach.v1.ApproachService/ApproachPlane",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApproachServiceServer).ApproachPlane(ctx, req.(*ApproachPlaneRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ApproachService_ServiceDesc is the grpc.ServiceDesc for ApproachService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var ApproachService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "approach.v1.ApproachService",
 	HandlerType: (*ApproachServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ApproachPlane",
+			Handler:    _ApproachService_ApproachPlane_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "GetPlanes",
