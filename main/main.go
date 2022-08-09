@@ -23,9 +23,6 @@ func main() {
 
 	var node *gomavlib.Node
 
-	//sysId uint8 := 0
-	//compId := 0
-
 	var sysId uint8 = 0
 	var compId uint8 = 0
 

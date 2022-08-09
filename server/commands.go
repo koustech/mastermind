@@ -55,7 +55,7 @@ func (s *mastermindServiceServer) SetSpeed(_ context.Context, request *pb.SetSpe
 		Param6:          0,
 		Param7:          0,
 	})
-	utils.Logger.Info("Set speed to %v m/s", request.NewSpeed)
+	utils.Logger.Infof("Set speed to %v m/s", request.NewSpeed)
 
 	return &pb.SetSpeedResponse{CommandSucceeded: true}, nil
 }
