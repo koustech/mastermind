@@ -22,7 +22,7 @@ func Run(listenOn string, node *gomavlib.Node) error {
 	}
 
 	gRPCServer := grpc.NewServer()
-	serviceServer := NewMastermindServiceServer()
+	serviceServer := NewMastermindServiceServer(node)
 	pb.RegisterMastermindServiceServer(gRPCServer, serviceServer)
 	reflection.Register(gRPCServer)
 
@@ -44,10 +44,11 @@ type mastermindServiceServer struct {
 
 	stateUpdateHandlers map[uuid.UUID]evbus.Subscription // stateUpdateFuncs for all active sessison
 	telemUpdateHandlers map[uuid.UUID]evbus.Subscription
-	stateBus            evbus.Bus // event notifier for state changes
+	stateBus            evbus.Bus      // event notifier for state changes
+	node                *gomavlib.Node // node connected to the plane
 }
 
-func NewMastermindServiceServer() *mastermindServiceServer {
+func NewMastermindServiceServer(node *gomavlib.Node) *mastermindServiceServer {
 	// initializes state and allocates channels into empty channels slice
 	stateBus := evbus.New()
 	stateUpdateHandlers := make(map[uuid.UUID]evbus.Subscription) // handlers for every stateupdate func
@@ -57,5 +58,6 @@ func NewMastermindServiceServer() *mastermindServiceServer {
 		stateBus:            stateBus,
 		stateUpdateHandlers: stateUpdateHandlers,
 		telemUpdateHandlers: telemUpdateHandlers,
+		node:                node,
 	}
 }

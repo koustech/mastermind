@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	evbus "github.com/ispringtech/eventbus"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
-	"github.com/koustech/mastermind/utils"
 	u "github.com/koustech/mastermind/utils"
 )
 
@@ -40,25 +39,17 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 			switch msg := frm.Message().(type) {
 			case *ardupilotmega.MessageAttitude:
 				attitude = *msg
-				// timeBootMs = msg.TimeBootMs
-				// utils.Logger.Debug("timebootms updated by attitude: ", timeBootMs)
 			case *ardupilotmega.MessageVfrHud:
 				vfrHud = *msg
 			case *ardupilotmega.MessageGlobalPositionInt:
 				globalPositionInt = *msg
-				// timeBootMs = msg.TimeBootMs
-				// utils.Logger.Debug("timebootms updated by gpsint: ", timeBootMs)
 			case *ardupilotmega.MessageNavControllerOutput:
 				navControllerOutput = *msg
 			case *ardupilotmega.MessageBatteryStatus:
 				batteryStatus = *msg
 				updateFlag = false // Don't want to increase message sending frequency just for battery
 			case *ardupilotmega.MessageSystemTime:
-				utils.Logger.Debug("timeunixsec by systemTime: ", msg.TimeUnixUsec)
-				utils.Logger.Debug("timeunixsec / 1000 by systemTime: ", msg.TimeUnixUsec/1000)
-
 				timeBootMs = msg.TimeUnixUsec / 1000
-				utils.Logger.Debug("timebootms updated by systemTime: ", timeBootMs)
 			default:
 				updateFlag = false
 			}
