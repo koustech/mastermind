@@ -6,7 +6,7 @@ import (
 	"github.com/koustech/mastermind/utils"
 )
 
-func ConnectToVehicle(address string) *gomavlib.Node {
+func ConnectToVehicle(address string) (node *gomavlib.Node, systemId uint8, componentId uint8) {
 	node, err := gomavlib.NewNode(gomavlib.NodeConf{
 		Endpoints: []gomavlib.EndpointConf{
 			gomavlib.EndpointUDPServer{Address: address},
@@ -22,12 +22,25 @@ func ConnectToVehicle(address string) *gomavlib.Node {
 		for evt := range node.Events() {
 			switch evt.(type) {
 			case *gomavlib.EventChannelOpen:
-				utils.Logger.Infof("received heartbeat from %s", address)
 				return
 			}
 		}
 	}
+	getSysDetails := func() (uint8, uint8) {
+		var sysId uint8
+		var compId uint8
+		for evt := range node.Events() {
+			if frm, ok := evt.(*gomavlib.EventFrame); ok {
+				sysId = frm.SystemID()
+				compId = frm.ComponentID()
+				break
+			}
+		}
+		return sysId, compId
+	}
 
 	awaitHeartbeat()
-	return node
+	sysId, compId := getSysDetails()
+	utils.Logger.Infof("received heartbeat from %s sysid: %v cid: %v", address, sysId, compId)
+	return node, sysId, compId
 }

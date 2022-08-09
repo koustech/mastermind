@@ -23,16 +23,22 @@ func main() {
 
 	var node *gomavlib.Node
 
+	//sysId uint8 := 0
+	//compId := 0
+
+	var sysId uint8 = 0
+	var compId uint8 = 0
+
 	if test {
 		u.Logger.Info("Running in test mode")
 		node = &gomavlib.Node{}
 	} else {
 		u.Logger.Info("Running in telemetry mode")
-		node = telemetry.ConnectToVehicle(mavlinkAddress)
+		node, sysId, compId = telemetry.ConnectToVehicle(mavlinkAddress)
 	}
 	defer node.Close()
 
-	if err := server.Run(grpcAddress, node); err != nil {
+	if err := server.Run(grpcAddress, node, sysId, compId); err != nil {
 		u.Logger.Fatal(err)
 	}
 }

@@ -15,14 +15,14 @@ import (
 	"google.golang.org/grpc"
 )
 
-func Run(listenOn string, node *gomavlib.Node) error {
+func Run(listenOn string, node *gomavlib.Node, sysId uint8, compId uint8) error {
 	listener, err := net.Listen("tcp", listenOn)
 	if err != nil {
 		return fmt.Errorf("failed to listen on %s: %w", listenOn, err)
 	}
 
 	gRPCServer := grpc.NewServer()
-	serviceServer := NewMastermindServiceServer(node)
+	serviceServer := NewMastermindServiceServer(node, sysId, compId)
 	pb.RegisterMastermindServiceServer(gRPCServer, serviceServer)
 	reflection.Register(gRPCServer)
 
@@ -46,9 +46,11 @@ type mastermindServiceServer struct {
 	telemUpdateHandlers map[uuid.UUID]evbus.Subscription
 	stateBus            evbus.Bus      // event notifier for state changes
 	node                *gomavlib.Node // node connected to the plane
+	sysId               uint8          // MAVLink system ID of the plane
+	compId              uint8          // MAVLink component ID of the autopilot
 }
 
-func NewMastermindServiceServer(node *gomavlib.Node) *mastermindServiceServer {
+func NewMastermindServiceServer(node *gomavlib.Node, sysId uint8, compId uint8) *mastermindServiceServer {
 	// initializes state and allocates channels into empty channels slice
 	stateBus := evbus.New()
 	stateUpdateHandlers := make(map[uuid.UUID]evbus.Subscription) // handlers for every stateupdate func
@@ -59,5 +61,7 @@ func NewMastermindServiceServer(node *gomavlib.Node) *mastermindServiceServer {
 		stateUpdateHandlers: stateUpdateHandlers,
 		telemUpdateHandlers: telemUpdateHandlers,
 		node:                node,
+		sysId:               sysId,
+		compId:              compId,
 	}
 }
