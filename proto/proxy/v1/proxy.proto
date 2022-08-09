@@ -55,7 +55,8 @@ message EnemyPlane {
   double pitch = 5; // Pitch angle of the enemy plane in degrees
   double roll = 6;  // Roll angle of the enemy plane in degrees
   double yaw = 7;   // Yaw angle of the enemy plane in degrees
-  int32 time_diff = 8; // Time difference between the UAV and the enemy plane
+  int32 time_diff = 8;    // Time difference between the UAV and the enemy plane
+  double groundspeed = 9; // Groundspeed in m/s
 }
 
 message Time {
