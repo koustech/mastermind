@@ -50,6 +50,9 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 				updateFlag = false // Don't want to increase message sending frequency just for battery
 			case *ardupilotmega.MessageSystemTime:
 				timeBootMs = msg.TimeUnixUsec / 1000
+			case *ardupilotmega.MessageMissionAck:
+				u.Logger.Debugf("received mission ack: %+v", msg)
+				updateFlag = false
 			default:
 				updateFlag = false
 			}

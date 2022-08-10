@@ -59,3 +59,29 @@ func (s *mastermindServiceServer) SetSpeed(_ context.Context, request *pb.SetSpe
 
 	return &pb.SetSpeedResponse{CommandSucceeded: true}, nil
 }
+
+// GotoWaypoint tells the plane to go to a specific point
+func (s *mastermindServiceServer) GotoWaypoint(_ context.Context, request *pb.GotoWaypointRequest) (*pb.GotoWaypointResponse, error) {
+	utils.Logger.Infof("GOTO lat:%v lon:%v", request.Lat, request.Lon)
+
+	s.node.WriteMessageAll(&ardupilotmega.MessageMissionItem{
+		TargetSystem:    s.sysId,
+		TargetComponent: s.compId,
+		Seq:             0,
+		Frame:           ardupilotmega.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+		Command:         ardupilotmega.MAV_CMD_NAV_WAYPOINT,
+		Current:         2,
+		Autocontinue:    1,
+		Param1:          0,
+		Param2:          0,
+		Param3:          0,
+		Param4:          0,
+		X:               request.Lat,
+		Y:               request.Lon,
+		Z:               request.Alt,
+		MissionType:     ardupilotmega.MAV_MISSION_TYPE_MISSION,
+	})
+
+	return &pb.GotoWaypointResponse{CommandSucceeded: true}, nil
+
+}
