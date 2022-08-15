@@ -49,7 +49,8 @@ type mastermindServiceServer struct {
 	node                *gomavlib.Node // node connected to the plane
 	sysId               uint8          // MAVLink system ID of the plane
 	compId              uint8          // MAVLink component ID of the autopilot
-	target              pb.Target     // Target being followed by tracking service
+	target              *pb.Target     // Target being followed by tracking service
+	targetMu            sync.Mutex     // protects target
 }
 
 func NewMastermindServiceServer(node *gomavlib.Node, sysId uint8, compId uint8) *mastermindServiceServer {

@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"time"
+
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/utils"
@@ -83,5 +85,45 @@ func (s *mastermindServiceServer) GotoWaypoint(_ context.Context, request *pb.Go
 	})
 
 	return &pb.GotoWaypointResponse{CommandSucceeded: true}, nil
+
+}
+
+const SET_ATTITUDE_TIMEOUT_SECONDS = 6
+
+// SetAttitude tells the plane to obtain a specific attitude
+func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAttitudeServer) error {
+	// track time for case of timeout
+	startTime := time.Now()
+	utils.Logger.Info("SetAttitude() called")
+
+	// set mode to FBWB ONE TIME ONLY
+	// TODO: implement
+	// for every received message, send command and update target object (to be sent in detailed telem)
+
+	for {
+		currentTime := time.Now()
+		if currentTime.Sub(startTime).Seconds() > 6 {
+			break
+		}
+
+		attitudeRequest, err := stream.Recv()
+
+		if err != nil {
+			break
+		}
+
+		s.targetMu.Lock()
+		s.target = attitudeRequest.Target
+		s.targetMu.Unlock()
+	}
+
+	// close stream once EOF is received and set target to nil
+	utils.Logger.Info("SetAttitude() finished")
+
+	s.targetMu.Lock()
+	s.target = nil
+	s.targetMu.Unlock()
+
+	return stream.SendAndClose(&pb.SetAttitudeResponse{})
 
 }

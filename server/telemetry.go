@@ -140,6 +140,10 @@ func (s *mastermindServiceServer) GetDetailedTelemetry(_ *pb.GetDetailedTelemetr
 	s.telemUpdateHandlers[sessionId] = s.stateBus.Subscribe(EventNewTelemetry, func(e evbus.Event) {
 		se := e.(*NewTelemetryEvent)
 		response := se.response
+		s.targetMu.Lock()
+		se.response.Target = s.target
+		s.targetMu.Unlock()
+
 		if err := stream.Send(response); err != nil {
 			s.stateBus.Unsubscribe(s.telemUpdateHandlers[sessionId])
 			delete(s.telemUpdateHandlers, sessionId)
