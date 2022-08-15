@@ -37,6 +37,8 @@ type MastermindServiceClient interface {
 	SetSpeed(ctx context.Context, in *SetSpeedRequest, opts ...grpc.CallOption) (*SetSpeedResponse, error)
 	// GotoWaypoint commands the plane to go to specified waypoint
 	GotoWaypoint(ctx context.Context, in *GotoWaypointRequest, opts ...grpc.CallOption) (*GotoWaypointResponse, error)
+	// SetAttitude comannds the plane to change its attitude
+	SetAttitude(ctx context.Context, opts ...grpc.CallOption) (MastermindService_SetAttitudeClient, error)
 }
 
 type mastermindServiceClient struct {
@@ -169,6 +171,40 @@ func (c *mastermindServiceClient) GotoWaypoint(ctx context.Context, in *GotoWayp
 	return out, nil
 }
 
+func (c *mastermindServiceClient) SetAttitude(ctx context.Context, opts ...grpc.CallOption) (MastermindService_SetAttitudeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &MastermindService_ServiceDesc.Streams[3], "/mastermind.v1.MastermindService/SetAttitude", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &mastermindServiceSetAttitudeClient{stream}
+	return x, nil
+}
+
+type MastermindService_SetAttitudeClient interface {
+	Send(*SetAttitudeRequest) error
+	CloseAndRecv() (*SetAttitudeResponse, error)
+	grpc.ClientStream
+}
+
+type mastermindServiceSetAttitudeClient struct {
+	grpc.ClientStream
+}
+
+func (x *mastermindServiceSetAttitudeClient) Send(m *SetAttitudeRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *mastermindServiceSetAttitudeClient) CloseAndRecv() (*SetAttitudeResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetAttitudeResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // MastermindServiceServer is the server API for MastermindService service.
 // All implementations should embed UnimplementedMastermindServiceServer
 // for forward compatibility
@@ -188,6 +224,8 @@ type MastermindServiceServer interface {
 	SetSpeed(context.Context, *SetSpeedRequest) (*SetSpeedResponse, error)
 	// GotoWaypoint commands the plane to go to specified waypoint
 	GotoWaypoint(context.Context, *GotoWaypointRequest) (*GotoWaypointResponse, error)
+	// SetAttitude comannds the plane to change its attitude
+	SetAttitude(MastermindService_SetAttitudeServer) error
 }
 
 // UnimplementedMastermindServiceServer should be embedded to have forward compatible implementations.
@@ -211,6 +249,9 @@ func (UnimplementedMastermindServiceServer) SetSpeed(context.Context, *SetSpeedR
 }
 func (UnimplementedMastermindServiceServer) GotoWaypoint(context.Context, *GotoWaypointRequest) (*GotoWaypointResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GotoWaypoint not implemented")
+}
+func (UnimplementedMastermindServiceServer) SetAttitude(MastermindService_SetAttitudeServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetAttitude not implemented")
 }
 
 // UnsafeMastermindServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -346,6 +387,32 @@ func _MastermindService_GotoWaypoint_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MastermindService_SetAttitude_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(MastermindServiceServer).SetAttitude(&mastermindServiceSetAttitudeServer{stream})
+}
+
+type MastermindService_SetAttitudeServer interface {
+	SendAndClose(*SetAttitudeResponse) error
+	Recv() (*SetAttitudeRequest, error)
+	grpc.ServerStream
+}
+
+type mastermindServiceSetAttitudeServer struct {
+	grpc.ServerStream
+}
+
+func (x *mastermindServiceSetAttitudeServer) SendAndClose(m *SetAttitudeResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *mastermindServiceSetAttitudeServer) Recv() (*SetAttitudeRequest, error) {
+	m := new(SetAttitudeRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // MastermindService_ServiceDesc is the grpc.ServiceDesc for MastermindService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -382,6 +449,11 @@ var MastermindService_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "GetDetailedTelemetry",
 			Handler:       _MastermindService_GetDetailedTelemetry_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "SetAttitude",
+			Handler:       _MastermindService_SetAttitude_Handler,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "proto/mastermind/v1/mastermind.proto",

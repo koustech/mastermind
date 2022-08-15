@@ -103,7 +103,13 @@ message GotoWaypointRequest {
   float lon = 2;
   float alt = 3;
 }
-
+// SetAttitude sends the desired attitude of the plane in degrees. Mastermind changes mode to FBWB before giving commands
+message SetAttitudeRequest {
+  float pitch = 1; // degree
+  float roll = 2;  // degree
+  Target target = 3; // positions of the target plane on the live stream
+}
+message SetAttitudeResponse {}
 message GotoWaypointResponse { bool command_succeeded = 1; }
 
 service MastermindService {
@@ -132,4 +138,7 @@ service MastermindService {
 
   // GotoWaypoint commands the plane to go to specified waypoint
   rpc GotoWaypoint(GotoWaypointRequest) returns (GotoWaypointResponse);
+
+  // SetAttitude comannds the plane to change its attitude
+  rpc SetAttitude(stream SetAttitudeRequest) returns (SetAttitudeResponse);
 }
