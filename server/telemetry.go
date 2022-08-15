@@ -28,9 +28,12 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 	navControllerOutput := ardupilotmega.MessageNavControllerOutput{}
 	batteryStatus := ardupilotmega.MessageBatteryStatus{}
 
+	isAutonomous := false // plane is autonomous if not in FBWA, MANUAL, or AUTOTUNE modes
+
 	var timeBootMs uint64
 
 	var updateFlag bool
+
 	// print every message we receive
 	for evt := range node.Events() {
 		updateFlag = true
@@ -53,6 +56,16 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 			case *ardupilotmega.MessageMissionAck:
 				u.Logger.Debugf("received mission ack: %+v", msg)
 				updateFlag = false
+			case *ardupilotmega.MessageHeartbeat:
+				switch ardupilotmega.PLANE_MODE(msg.CustomMode) {
+				case ardupilotmega.PLANE_MODE_MANUAL,
+					ardupilotmega.PLANE_MODE_FLY_BY_WIRE_A,
+					ardupilotmega.PLANE_MODE_AUTOTUNE:
+					isAutonomous = false
+				default:
+					isAutonomous = true
+				}
+
 			default:
 				updateFlag = false
 			}
@@ -71,7 +84,7 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 						Groundspeed: vfrHud.Groundspeed,
 						WpDist:      uint32(navControllerOutput.WpDist),
 						Battery:     int32(batteryStatus.BatteryRemaining),
-						Autonomous:  false, // FIXME: change from false to according to mode
+						Autonomous:  isAutonomous,
 						Target:      nil,
 					},
 				})
