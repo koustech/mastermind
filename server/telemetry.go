@@ -39,7 +39,7 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 		updateFlag = true
 
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
-			if frm.SystemID() != s.sysId {
+			if frm.SystemID() != s.sysId || frm.ComponentID() != s.compId {
 				continue
 			}
 			switch msg := frm.Message().(type) {
@@ -66,10 +66,10 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 					ardupilotmega.PLANE_MODE_AUTOTUNE:
 
 					isAutonomous = false
-					u.Logger.Info("mode manual because of mode no. ", msg.CustomMode)
+					u.Logger.Infof("mode manual because of mode no. %v sent by sysid: %v compid: %v", msg.CustomMode, frm.SystemID(), frm.ComponentID())
 				default:
 					isAutonomous = true
-					u.Logger.Info("mode autonomous because of mode no. ", msg.CustomMode)
+					u.Logger.Infof("mode autonomous because of mode no. %v sent by sysid: %v compid: %v", msg.CustomMode, frm.SystemID(), frm.ComponentID())
 				}
 
 			default:
