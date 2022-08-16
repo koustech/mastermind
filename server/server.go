@@ -27,7 +27,7 @@ func Run(listenOn string, node *gomavlib.Node, sysId uint8, compId uint8) error 
 	pb.RegisterMastermindServiceServer(gRPCServer, serviceServer)
 	reflection.Register(gRPCServer)
 
-	go GetTelem(serviceServer.stateBus, node)
+	go GetTelem(serviceServer, node)
 
 	u.Logger.Infof("Listening on %v", listenOn)
 	if err := gRPCServer.Serve(listener); err != nil {
