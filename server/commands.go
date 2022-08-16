@@ -81,7 +81,7 @@ func (s *mastermindServiceServer) GotoWaypoint(_ context.Context, request *pb.Go
 		X:               request.Lat,
 		Y:               request.Lon,
 		Z:               request.Alt,
-		
+		MissionType: ardupilotmega.MAV_MISSION_TYPE_MISSION,
 	})
 
 	return &pb.GotoWaypointResponse{CommandSucceeded: true}, nil
