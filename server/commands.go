@@ -73,7 +73,7 @@ func (s *mastermindServiceServer) GotoWaypoint(_ context.Context, request *pb.Go
 		Frame:           ardupilotmega.MAV_FRAME_GLOBAL_RELATIVE_ALT,
 		Command:         ardupilotmega.MAV_CMD_NAV_WAYPOINT,
 		Current:         2,
-		Autocontinue:    1,
+		Autocontinue:    0,
 		Param1:          0,
 		Param2:          0,
 		Param3:          0,
