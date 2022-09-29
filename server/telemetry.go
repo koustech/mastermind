@@ -21,7 +21,7 @@ func (e *NewTelemetryEvent) EventID() evbus.EventID {
 	return EventNewTelemetry
 }
 
-func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
+func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 	vfrHud := ardupilotmega.MessageVfrHud{}
 	attitude := ardupilotmega.MessageAttitude{}
 	globalPositionInt := ardupilotmega.MessageGlobalPositionInt{}
@@ -39,6 +39,9 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 		updateFlag = true
 
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
+			if frm.SystemID() != 1 || frm.ComponentID() != 1 {
+				continue
+			}
 			switch msg := frm.Message().(type) {
 			case *ardupilotmega.MessageAttitude:
 				attitude = *msg
@@ -61,6 +64,7 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 				case ardupilotmega.PLANE_MODE_MANUAL,
 					ardupilotmega.PLANE_MODE_FLY_BY_WIRE_A,
 					ardupilotmega.PLANE_MODE_AUTOTUNE:
+
 					isAutonomous = false
 				default:
 					isAutonomous = true
@@ -71,7 +75,7 @@ func GetTelem(bus evbus.Bus, node *gomavlib.Node) {
 			}
 
 			if updateFlag {
-				bus.Publish(&NewTelemetryEvent{
+				s.stateBus.Publish(&NewTelemetryEvent{
 					response: &pb.GetDetailedTelemetryResponse{
 						TimeBootMs:  timeBootMs,
 						Lat:         globalPositionInt.Lat,
@@ -103,6 +107,8 @@ func (s *mastermindServiceServer) GetTelemetry(_ *pb.GetTelemetryRequest, stream
 
 	s.telemUpdateHandlers[sessionId] = s.stateBus.Subscribe(EventNewTelemetry, func(e evbus.Event) {
 		se := e.(*NewTelemetryEvent)
+
+		se.response.Lat
 		// change detailed telemetry to normal telem response
 		response := &pb.GetTelemetryResponse{
 			TimeBootMs:  se.response.TimeBootMs,

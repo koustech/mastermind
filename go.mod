@@ -7,6 +7,7 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/ispringtech/eventbus v0.0.0-20190701203509-53c525703608
 	github.com/stretchr/testify v1.8.0
+	github.com/westphae/quaternion v0.0.0-20210908005042-fa06d546065c
 	go.uber.org/zap v1.21.0
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.0

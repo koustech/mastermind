@@ -112,6 +112,13 @@ message SetAttitudeRequest {
 message SetAttitudeResponse {}
 message GotoWaypointResponse { bool command_succeeded = 1; }
 
+message Time {
+  uint32 hours = 1;
+  uint32 minutes = 2;
+  uint32 seconds = 3;
+  uint32 milliseconds = 4;
+}
+
 service MastermindService {
   // A bidirectional stream
   // Accepts a stream of UpdateStateRequests during the competition, while

@@ -39,6 +39,8 @@ type MastermindServiceClient interface {
 	GotoWaypoint(ctx context.Context, in *GotoWaypointRequest, opts ...grpc.CallOption) (*GotoWaypointResponse, error)
 	// SetAttitude comannds the plane to change its attitude
 	SetAttitude(ctx context.Context, opts ...grpc.CallOption) (MastermindService_SetAttitudeClient, error)
+	// LockSuccess indicates a successful lock on target for more than 4 seconds
+	LockSuccess(ctx context.Context, in *LockSuccessRequest, opts ...grpc.CallOption) (*LockSuccessResponse, error)
 }
 
 type mastermindServiceClient struct {
@@ -205,6 +207,15 @@ func (x *mastermindServiceSetAttitudeClient) CloseAndRecv() (*SetAttitudeRespons
 	return m, nil
 }
 
+func (c *mastermindServiceClient) LockSuccess(ctx context.Context, in *LockSuccessRequest, opts ...grpc.CallOption) (*LockSuccessResponse, error) {
+	out := new(LockSuccessResponse)
+	err := c.cc.Invoke(ctx, "/mastermind.v1.MastermindService/LockSuccess", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MastermindServiceServer is the server API for MastermindService service.
 // All implementations should embed UnimplementedMastermindServiceServer
 // for forward compatibility
@@ -226,6 +237,8 @@ type MastermindServiceServer interface {
 	GotoWaypoint(context.Context, *GotoWaypointRequest) (*GotoWaypointResponse, error)
 	// SetAttitude comannds the plane to change its attitude
 	SetAttitude(MastermindService_SetAttitudeServer) error
+	// LockSuccess indicates a successful lock on target for more than 4 seconds
+	LockSuccess(context.Context, *LockSuccessRequest) (*LockSuccessResponse, error)
 }
 
 // UnimplementedMastermindServiceServer should be embedded to have forward compatible implementations.
@@ -252,6 +265,9 @@ func (UnimplementedMastermindServiceServer) GotoWaypoint(context.Context, *GotoW
 }
 func (UnimplementedMastermindServiceServer) SetAttitude(MastermindService_SetAttitudeServer) error {
 	return status.Errorf(codes.Unimplemented, "method SetAttitude not implemented")
+}
+func (UnimplementedMastermindServiceServer) LockSuccess(context.Context, *LockSuccessRequest) (*LockSuccessResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LockSuccess not implemented")
 }
 
 // UnsafeMastermindServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -413,6 +429,24 @@ func (x *mastermindServiceSetAttitudeServer) Recv() (*SetAttitudeRequest, error)
 	return m, nil
 }
 
+func _MastermindService_LockSuccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LockSuccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MastermindServiceServer).LockSuccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mastermind.v1.MastermindService/LockSuccess",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MastermindServiceServer).LockSuccess(ctx, req.(*LockSuccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MastermindService_ServiceDesc is the grpc.ServiceDesc for MastermindService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -431,6 +465,10 @@ var MastermindService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GotoWaypoint",
 			Handler:    _MastermindService_GotoWaypoint_Handler,
+		},
+		{
+			MethodName: "LockSuccess",
+			Handler:    _MastermindService_LockSuccess_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
