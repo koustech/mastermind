@@ -108,7 +108,6 @@ func (s *mastermindServiceServer) GetTelemetry(_ *pb.GetTelemetryRequest, stream
 	s.telemUpdateHandlers[sessionId] = s.stateBus.Subscribe(EventNewTelemetry, func(e evbus.Event) {
 		se := e.(*NewTelemetryEvent)
 
-		se.response.Lat
 		// change detailed telemetry to normal telem response
 		response := &pb.GetTelemetryResponse{
 			TimeBootMs:  se.response.TimeBootMs,
