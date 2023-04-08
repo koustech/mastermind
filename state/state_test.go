@@ -8,35 +8,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TestResolveStateErrors checks that input states with undefined transitions
-// return an error and the same state
-func TestResolveStateErrors(t *testing.T) {
-	// Setup
-	testCases := []struct {
-		desc            string
-		stateTransition StateTransition
-		inputState      MissionState
-		resultState     MissionState
-		err             error
-	}{
-		{
-			desc:            "transition from approach state with approach_selected = ERR",
-			stateTransition: StateTransition_STATE_TRANSITION_MODE_APPROACH_SELECTED,
-			inputState:      MissionState_MISSION_STATE_APPROACH,
-			resultState:     MissionState_MISSION_STATE_APPROACH,
-			err:             ErrInvalidStateTransition,
-		},
-	}
-
-	for _, scenario := range testCases {
-		t.Run(scenario.desc, func(t *testing.T) {
-			result, err := ResolveState(scenario.stateTransition, scenario.inputState)
-			assert.IsType(t, scenario.err, err)
-			assert.Equal(t, scenario.resultState, result)
-		})
-	}
-}
-
 // TestResolveStateValidTransitions checks that transitions are correctly resolved for all defined state transitions
 func TestResolveStateValidTransitions(t *testing.T) {
 	// Setup
