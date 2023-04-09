@@ -81,6 +81,15 @@ func ResolveState(stateTransition StateTransition, currentState MissionState) (M
 		default:
 			return MissionState_MISSION_STATE_KAMIKAZE, ErrInvalidStateTransition
 		}
+	case MissionState_MISSION_STATE_NEUTRAL:
+		switch stateTransition {
+		case StateTransition_STATE_TRANSITION_MODE_APPROACH_SELECTED:
+			return MissionState_MISSION_STATE_APPROACH, nil
+		case StateTransition_STATE_TRANSITION_MODE_KAMIKAZE_SELECTED:
+			return MissionState_MISSION_STATE_KAMIKAZE, nil
+		default:
+			return MissionState_MISSION_STATE_NEUTRAL, ErrInvalidStateTransition
+		}
 	default:
 		return MissionState_MISSION_STATE_APPROACH, ErrInvalidStateTransition
 	}
