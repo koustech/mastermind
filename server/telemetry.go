@@ -62,6 +62,7 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 				updateFlag = false
 			case *ardupilotmega.MessageWind:
 				wind = *msg
+				updateFlag = false
 			case *ardupilotmega.MessageHeartbeat:
 				switch ardupilotmega.PLANE_MODE(msg.CustomMode) {
 				case ardupilotmega.PLANE_MODE_MANUAL,
