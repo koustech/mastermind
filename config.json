@@ -1,0 +1,15 @@
+{
+  "connections": {
+    "mastermind": "127.0.0.1:5678",
+    "approach": "127.0.0.1:7890",
+    "competition_server": "127.0.0.1:8000"
+  },
+  "credentials": {
+    "competition_server": {
+      "kadi": "koustech",
+      "sifre": "d9a1b26qft"
+    }
+  },
+  "koustech_team_id": 23,
+  "telem_send_period_ms": 700
+}
