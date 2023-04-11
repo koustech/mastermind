@@ -106,7 +106,7 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 		Command:         ardupilotmega.MAV_CMD_DO_SET_MODE,
 		Confirmation:    0,
 		Param1:          26, // PARAM1 MUST BE MAIN MODE (koustech)
-		Param2:          0, // PARAM2 MUST BE SUBMODE
+		Param2:          0,  // PARAM2 MUST BE SUBMODE
 		Param3:          0,
 		Param4:          0,
 		Param5:          0,
@@ -128,14 +128,15 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 		if err != nil {
 			break
 		}
+		utils.Logger.Debugf("Received attitude request: %+v", attitudeRequest)
 
 		s.node.WriteMessageAll(&ardupilotmega.MessageCommandLong{
 			TargetSystem:    s.sysId,
 			TargetComponent: s.compId,
 			Command:         MAV_CMD_NAV_LOCK_KSTCH,
 			Confirmation:    0,
-			Param1:          attitudeRequest.Roll * float32(attitudeRequest.Target.X),
-			Param2:          attitudeRequest.Pitch * float32(attitudeRequest.Target.Y),
+			Param1:          s.target.XLock,
+			Param2:          s.target.YLock,
 			Param3:          0,
 			Param4:          0,
 			Param5:          0,
