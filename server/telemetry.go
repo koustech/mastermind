@@ -27,6 +27,7 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 	globalPositionInt := ardupilotmega.MessageGlobalPositionInt{}
 	navControllerOutput := ardupilotmega.MessageNavControllerOutput{}
 	batteryStatus := ardupilotmega.MessageBatteryStatus{}
+	wind := ardupilotmega.MessageWind{}
 
 	isAutonomous := false // plane is autonomous if not in FBWA, MANUAL, or AUTOTUNE modes
 
@@ -59,6 +60,8 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 			case *ardupilotmega.MessageMissionAck:
 				u.Logger.Debugf("received mission ack: %+v", msg)
 				updateFlag = false
+			case *ardupilotmega.MessageWind:
+				wind = *msg
 			case *ardupilotmega.MessageHeartbeat:
 				switch ardupilotmega.PLANE_MODE(msg.CustomMode) {
 				case ardupilotmega.PLANE_MODE_MANUAL,
@@ -77,19 +80,21 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 			if updateFlag {
 				s.stateBus.Publish(&NewTelemetryEvent{
 					response: &pb.GetDetailedTelemetryResponse{
-						TimeBootMs:  timeBootMs,
-						Lat:         globalPositionInt.Lat,
-						Lon:         globalPositionInt.Lon,
-						RelativeAlt: globalPositionInt.RelativeAlt,
-						Roll:        attitude.Roll,
-						Pitch:       attitude.Pitch,
-						Yaw:         attitude.Yaw,
-						Airspeed:    vfrHud.Airspeed,
-						Groundspeed: vfrHud.Groundspeed,
-						WpDist:      uint32(navControllerOutput.WpDist),
-						Battery:     int32(batteryStatus.BatteryRemaining),
-						Autonomous:  isAutonomous,
-						Target:      nil,
+						TimeBootMs:    timeBootMs,
+						Lat:           globalPositionInt.Lat,
+						Lon:           globalPositionInt.Lon,
+						RelativeAlt:   globalPositionInt.RelativeAlt,
+						Roll:          attitude.Roll,
+						Pitch:         attitude.Pitch,
+						Yaw:           attitude.Yaw,
+						Airspeed:      vfrHud.Airspeed,
+						Groundspeed:   vfrHud.Groundspeed,
+						WpDist:        uint32(navControllerOutput.WpDist),
+						Battery:       int32(batteryStatus.BatteryRemaining),
+						Autonomous:    isAutonomous,
+						Target:        nil,
+						WindSpeed:     wind.Speed,
+						WindDirection: wind.Direction,
 					},
 				})
 			}
@@ -120,6 +125,8 @@ func (s *mastermindServiceServer) GetTelemetry(_ *pb.GetTelemetryRequest, stream
 			Airspeed:    se.response.Airspeed,
 			Groundspeed: se.response.Groundspeed,
 			WpDist:      se.response.WpDist,
+			WindSpeed:  se.response.WindSpeed,
+			WindDirection: se.response.WindDirection,
 		}
 		if err := stream.Send(response); err != nil {
 			s.stateBus.Unsubscribe(s.telemUpdateHandlers[sessionId])
