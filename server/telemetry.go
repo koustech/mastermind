@@ -116,17 +116,17 @@ func (s *mastermindServiceServer) GetTelemetry(_ *pb.GetTelemetryRequest, stream
 
 		// change detailed telemetry to normal telem response
 		response := &pb.GetTelemetryResponse{
-			TimeBootMs:  se.response.TimeBootMs,
-			Lat:         se.response.Lat,
-			Lon:         se.response.Lon,
-			RelativeAlt: se.response.RelativeAlt,
-			Roll:        se.response.Roll,
-			Pitch:       se.response.Pitch,
-			Yaw:         se.response.Yaw,
-			Airspeed:    se.response.Airspeed,
-			Groundspeed: se.response.Groundspeed,
-			WpDist:      se.response.WpDist,
-			WindSpeed:  se.response.WindSpeed,
+			TimeBootMs:    se.response.TimeBootMs,
+			Lat:           se.response.Lat,
+			Lon:           se.response.Lon,
+			RelativeAlt:   se.response.RelativeAlt,
+			Roll:          se.response.Roll,
+			Pitch:         se.response.Pitch,
+			Yaw:           se.response.Yaw,
+			Airspeed:      se.response.Airspeed,
+			Groundspeed:   se.response.Groundspeed,
+			WpDist:        se.response.WpDist,
+			WindSpeed:     se.response.WindSpeed,
 			WindDirection: se.response.WindDirection,
 		}
 		if err := stream.Send(response); err != nil {
