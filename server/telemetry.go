@@ -67,6 +67,7 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 				switch ardupilotmega.PLANE_MODE(msg.CustomMode) {
 				case ardupilotmega.PLANE_MODE_MANUAL,
 					ardupilotmega.PLANE_MODE_FLY_BY_WIRE_A,
+					ardupilotmega.PLANE_MODE_FLY_BY_WIRE_B,
 					ardupilotmega.PLANE_MODE_AUTOTUNE:
 
 					isAutonomous = false
