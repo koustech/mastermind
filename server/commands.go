@@ -10,7 +10,8 @@ import (
 )
 
 const MAV_CMD_NAV_LOCK_KSTCH = 151 // command ID of custom command to move plane
-const MODE_KOUSTECH_LOCK = 26
+const MODE_KOUSTECH_LOCK = 30
+const LOCK_DEFAULT_DISTANCE = 20
 
 // SetPIDLevel sets the PID of the plane according to predetermined levels in the config
 func (s *mastermindServiceServer) SetPIDLevel(_ context.Context, request *pb.SetPIDLevelRequest) (*pb.SetPIDLevelResponse, error) {
@@ -130,15 +131,14 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 		TargetComponent: s.compId,
 		Command:         ardupilotmega.MAV_CMD_DO_SET_MODE,
 		Confirmation:    0,
-		Param1:          MODE_KOUSTECH_LOCK, // PARAM1 MUST BE MAIN MODE (koustech)
-		Param2:          0,                  // PARAM2 MUST BE SUBMODE
+		Param1:          1,                  // PARAM1 MUST BE MAIN MODE (koustech)
+		Param2:          MODE_KOUSTECH_LOCK, // PARAM2 MUST BE SUBMODE
 		Param3:          0,
 		Param4:          0,
 		Param5:          0,
 		Param6:          0,
 		Param7:          0,
 	})
-
 
 	for {
 		currentTime := time.Now()
@@ -157,9 +157,9 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 			TargetComponent: s.compId,
 			Command:         MAV_CMD_NAV_LOCK_KSTCH,
 			Confirmation:    0,
-			Param1:          float32(attitudeRequest.Target.X),
-			Param2:          float32(attitudeRequest.Target.Y),
-			Param3:          0,
+			Param1:          attitudeRequest.Target.XLock,
+			Param2:          attitudeRequest.Target.YLock,
+			Param3:          LOCK_DEFAULT_DISTANCE,
 			Param4:          0,
 			Param5:          0,
 			Param6:          0,
