@@ -10,6 +10,7 @@ import (
 )
 
 const MAV_CMD_NAV_LOCK_KSTCH = 151 // command ID of custom command to move plane
+const MODE_KOUSTECH_LOCK = 26
 
 // SetPIDLevel sets the PID of the plane according to predetermined levels in the config
 func (s *mastermindServiceServer) SetPIDLevel(_ context.Context, request *pb.SetPIDLevelRequest) (*pb.SetPIDLevelResponse, error) {
@@ -98,15 +99,39 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 	startTime := time.Now()
 	utils.Logger.Info("SetAttitude() called")
 
-	// set mode to FBWB ONE TIME ONLY
+	// Create a new timer with a 1-second duration
+	noNewTargetTimer := time.NewTimer(1 * time.Second)
+
+	targetUpdated := make(chan struct{})
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-noNewTargetTimer.C:
+				s.targetMu.Lock()
+				s.target = nil
+				s.targetMu.Unlock()
+			case <-targetUpdated:
+				noNewTargetTimer.Reset(2 * time.Second)
+			}
+		}
+	}()
+
+	defer cancel()
+
+	// set mode to KOUSTECH_LOCK ONE TIME ONLY
 
 	s.node.WriteMessageAll(&ardupilotmega.MessageCommandLong{
 		TargetSystem:    s.sysId,
 		TargetComponent: s.compId,
 		Command:         ardupilotmega.MAV_CMD_DO_SET_MODE,
 		Confirmation:    0,
-		Param1:          26, // PARAM1 MUST BE MAIN MODE (koustech)
-		Param2:          0, // PARAM2 MUST BE SUBMODE
+		Param1:          MODE_KOUSTECH_LOCK, // PARAM1 MUST BE MAIN MODE (koustech)
+		Param2:          0,                  // PARAM2 MUST BE SUBMODE
 		Param3:          0,
 		Param4:          0,
 		Param5:          0,
@@ -114,8 +139,6 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 		Param7:          0,
 	})
 
-	// TODO: implement
-	// for every received message, send command and update target object (to be sent in detailed telem)
 
 	for {
 		currentTime := time.Now()
@@ -143,7 +166,12 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 			Param7:          0,
 		})
 
+		s.targetMu.Lock()
 		s.target = attitudeRequest.Target
+		s.targetMu.Unlock()
+
+		// Signal that the target has been updated
+		targetUpdated <- struct{}{}
 	}
 
 	// close stream once EOF is received and set target to nil
