@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
 	"github.com/google/uuid"
@@ -21,6 +23,11 @@ func (e *NewTelemetryEvent) EventID() evbus.EventID {
 	return EventNewTelemetry
 }
 
+var Kamikazeflag = false
+
+const KamikazeSequence = 4
+const WAIT_KAMIKAZE_TIME_S = 10
+
 func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 	vfrHud := ardupilotmega.MessageVfrHud{}
 	attitude := ardupilotmega.MessageAttitude{}
@@ -34,11 +41,12 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 	var timeBootMs uint64
 
 	var updateFlag bool
+	//kamikaze_wait := time.Now()
 
 	// print every message we receive
 	for evt := range node.Events() {
-		updateFlag = true
 
+		updateFlag = true
 		if frm, ok := evt.(*gomavlib.EventFrame); ok {
 			if frm.SystemID() != 1 || frm.ComponentID() != 1 {
 				continue
@@ -74,7 +82,37 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 				default:
 					isAutonomous = true
 				}
+			
+			case *ardupilotmega.MessageMissionItemReached:
+				u.Logger.Debugf("received mission item reached: %+v", msg)
+				recieved := msg.Seq
+				kamikaze_start_time := time.Now()
+				if recieved == KamikazeSequence {
+					if(s.currentState == pb.MissionState_MISSION_STATE_KAMIKAZE){
+						u.Logger.Warnf("Kamikaze waypoint reached UCHAK DALIOGHR!!!")
+						u.Logger.Warnf("kamikaze started at: %v", kamikaze_start_time)
 
+						SetModeKamikaze(frm.SystemID(), frm.ComponentID(), node)
+					}
+				}
+				
+
+			// case *ardupilotmega.MessageMissionCurrent:
+
+					
+			// 	recieved := msg.Seq
+			// 	if recieved == KamikazeSequence {
+			// 		elapsed_kamikaze_time := time.Now()
+			// 		if elapsed_kamikaze_time.Sub(kamikaze_wait) > time.Duration(WAIT_KAMIKAZE_TIME_S)*time.Second {
+			// 			Kamikazeflag = false
+			// 		}
+			// 		if s.currentState == pb.MissionState_MISSION_STATE_KAMIKAZE && !Kamikazeflag {
+			// 			u.Logger.Warnf("Kamikaze waypoint reached UCHAK DALIOGHR!!!")
+			// 			kamikaze_wait = time.Now()
+			// 			Kamikazeflag = true
+			// 			SetModeKamikaze(frm.SystemID(), frm.ComponentID(), node)
+			// 		}
+			// 	}
 			default:
 				updateFlag = false
 			}

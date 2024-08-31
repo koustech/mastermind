@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+
 	"github.com/aler9/gomavlib"
 	"github.com/koustech/mastermind/telemetry"
 

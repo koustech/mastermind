@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/aler9/gomavlib"
 	"github.com/aler9/gomavlib/pkg/dialects/ardupilotmega"
 	pb "github.com/koustech/mastermind/gen/go/proto/mastermind/v1"
 	"github.com/koustech/mastermind/utils"
@@ -11,6 +12,7 @@ import (
 
 const MAV_CMD_NAV_LOCK_KSTCH = 151 // command ID of custom command to move plane
 const MODE_KOUSTECH_LOCK = 30
+const MODE_KOUSTECH_KAMIKAZE = 31
 const LOCK_DEFAULT_DISTANCE = 20
 
 // SetPIDLevel sets the PID of the plane according to predetermined levels in the config
@@ -42,6 +44,24 @@ func (s *mastermindServiceServer) SetPIDLevel(_ context.Context, request *pb.Set
 	}
 
 	return &pb.SetPIDLevelResponse{CommandSucceeded: success}, nil
+}
+
+func SetModeKamikaze(sysId uint8, compId uint8, node *gomavlib.Node) {
+	// set mode to KOUSTECH_KAMIKAZE ONE TIME ONLY
+	node.WriteMessageAll(&ardupilotmega.MessageCommandLong{
+		TargetSystem:    sysId,
+		TargetComponent: compId,
+		Command:         ardupilotmega.MAV_CMD_DO_SET_MODE,
+		Confirmation:    0,
+		Param1:          1,                      // PARAM1 MUST BE MAIN MODE (koustech)
+		Param2:          MODE_KOUSTECH_KAMIKAZE, // PARAM2 MUST BE SUBMODE
+		Param3:          0,
+		Param4:          0,
+		Param5:          0,
+		Param6:          0,
+		Param7:          0,
+	})
+
 }
 
 // SetSpeed sets the airspeed of the plane
@@ -125,7 +145,7 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 	defer cancel()
 
 	// set mode to KOUSTECH_LOCK ONE TIME ONLY
-
+	utils.Logger.Info("Setting mode to KOUSTECH_LOCK")
 	s.node.WriteMessageAll(&ardupilotmega.MessageCommandLong{
 		TargetSystem:    s.sysId,
 		TargetComponent: s.compId,

@@ -9,6 +9,7 @@ import (
 	"github.com/koustech/mastermind/state"
 
 	u "github.com/koustech/mastermind/utils"
+
 )
 
 const (
@@ -22,6 +23,7 @@ type NewStateEvent struct {
 func (e *NewStateEvent) EventID() evbus.EventID {
 	return EventNewState
 }
+
 
 // UpdateState updates the current state according to the state transition table
 func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_UpdateStateServer) error {
@@ -73,6 +75,10 @@ func (s *mastermindServiceServer) UpdateState(stream pb.MastermindService_Update
 		s.currentState, err = state.ResolveState(req.StateTransition, s.currentState)
 		if err != nil {
 			u.Logger.Warn(err)
+		}
+		if s.currentState == pb.MissionState_MISSION_STATE_KAMIKAZE && Kamikazeflag{
+			Kamikazeflag = false
+
 		}
 		u.Logger.Infof("%v -> %v", oldState, s.currentState)
 
