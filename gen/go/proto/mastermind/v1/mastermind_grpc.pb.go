@@ -26,6 +26,7 @@ const (
 	MastermindService_SetSpeed_FullMethodName             = "/mastermind.v1.MastermindService/SetSpeed"
 	MastermindService_GotoWaypoint_FullMethodName         = "/mastermind.v1.MastermindService/GotoWaypoint"
 	MastermindService_SetAttitude_FullMethodName          = "/mastermind.v1.MastermindService/SetAttitude"
+	MastermindService_GetKamikazeStartTime_FullMethodName = "/mastermind.v1.MastermindService/GetKamikazeStartTime"
 )
 
 // MastermindServiceClient is the client API for MastermindService service.
@@ -49,6 +50,7 @@ type MastermindServiceClient interface {
 	GotoWaypoint(ctx context.Context, in *GotoWaypointRequest, opts ...grpc.CallOption) (*GotoWaypointResponse, error)
 	// SetAttitude comannds the plane to change its attitude
 	SetAttitude(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SetAttitudeRequest, SetAttitudeResponse], error)
+	GetKamikazeStartTime(ctx context.Context, in *GetKamikazeStartTimeRequest, opts ...grpc.CallOption) (*GetKamikazeStartTimeResponse, error)
 }
 
 type mastermindServiceClient struct {
@@ -153,6 +155,16 @@ func (c *mastermindServiceClient) SetAttitude(ctx context.Context, opts ...grpc.
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type MastermindService_SetAttitudeClient = grpc.ClientStreamingClient[SetAttitudeRequest, SetAttitudeResponse]
 
+func (c *mastermindServiceClient) GetKamikazeStartTime(ctx context.Context, in *GetKamikazeStartTimeRequest, opts ...grpc.CallOption) (*GetKamikazeStartTimeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetKamikazeStartTimeResponse)
+	err := c.cc.Invoke(ctx, MastermindService_GetKamikazeStartTime_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MastermindServiceServer is the server API for MastermindService service.
 // All implementations should embed UnimplementedMastermindServiceServer
 // for forward compatibility.
@@ -174,6 +186,7 @@ type MastermindServiceServer interface {
 	GotoWaypoint(context.Context, *GotoWaypointRequest) (*GotoWaypointResponse, error)
 	// SetAttitude comannds the plane to change its attitude
 	SetAttitude(grpc.ClientStreamingServer[SetAttitudeRequest, SetAttitudeResponse]) error
+	GetKamikazeStartTime(context.Context, *GetKamikazeStartTimeRequest) (*GetKamikazeStartTimeResponse, error)
 }
 
 // UnimplementedMastermindServiceServer should be embedded to have
@@ -203,6 +216,9 @@ func (UnimplementedMastermindServiceServer) GotoWaypoint(context.Context, *GotoW
 }
 func (UnimplementedMastermindServiceServer) SetAttitude(grpc.ClientStreamingServer[SetAttitudeRequest, SetAttitudeResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method SetAttitude not implemented")
+}
+func (UnimplementedMastermindServiceServer) GetKamikazeStartTime(context.Context, *GetKamikazeStartTimeRequest) (*GetKamikazeStartTimeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetKamikazeStartTime not implemented")
 }
 func (UnimplementedMastermindServiceServer) testEmbeddedByValue() {}
 
@@ -314,6 +330,24 @@ func _MastermindService_SetAttitude_Handler(srv interface{}, stream grpc.ServerS
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type MastermindService_SetAttitudeServer = grpc.ClientStreamingServer[SetAttitudeRequest, SetAttitudeResponse]
 
+func _MastermindService_GetKamikazeStartTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetKamikazeStartTimeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MastermindServiceServer).GetKamikazeStartTime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MastermindService_GetKamikazeStartTime_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MastermindServiceServer).GetKamikazeStartTime(ctx, req.(*GetKamikazeStartTimeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MastermindService_ServiceDesc is the grpc.ServiceDesc for MastermindService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -332,6 +366,10 @@ var MastermindService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GotoWaypoint",
 			Handler:    _MastermindService_GotoWaypoint_Handler,
+		},
+		{
+			MethodName: "GetKamikazeStartTime",
+			Handler:    _MastermindService_GetKamikazeStartTime_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

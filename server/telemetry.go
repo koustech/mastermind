@@ -82,6 +82,7 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 				default:
 					isAutonomous = true
 				}
+				
 			
 			case *ardupilotmega.MessageMissionItemReached:
 				u.Logger.Debugf("received mission item reached: %+v", msg)
