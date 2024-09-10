@@ -219,3 +219,15 @@ func (s *mastermindServiceServer) GetKamikazeStartTime(_ context.Context, reques
 		},
 	}, nil
 }
+
+func (s *mastermindServiceServer) DoKamikaze(_ context.Context, request *pb.DoKamikazeRequest) (*pb.DoKamikazeResponse, error) {
+	utils.Logger.Info("DoKamikaze() called")
+
+	// set mode to KOUSTECH_KAMIKAZE ONE TIME ONLY
+	SetModeKamikaze(s.sysId, s.compId, s.node)
+
+	// set kamikaze start time
+	kamikaze_start_time = time.Now()
+
+	return &pb.DoKamikazeResponse{}, nil
+}
