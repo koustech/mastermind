@@ -204,3 +204,18 @@ func (s *mastermindServiceServer) SetAttitude(stream pb.MastermindService_SetAtt
 	return stream.SendAndClose(&pb.SetAttitudeResponse{})
 
 }
+func (s *mastermindServiceServer) GetKamikazeStartTime(_ context.Context, request *pb.GetKamikazeStartTimeRequest) (*pb.GetKamikazeStartTimeResponse, error) {
+	var temp time.Time = kamikaze_start_time
+	utils.Logger.Debugf("retrieving kamikaze start time %v", temp)
+	kamikaze_start_time = time.Time{}
+	utils.Logger.Debugf("nereden nereye %v", temp)
+
+	return &pb.GetKamikazeStartTimeResponse{
+		Time: &pb.Time{
+			Hours:        uint32(temp.Hour()),
+			Minutes:      uint32(temp.Minute()),
+			Seconds:      uint32(temp.Second()),
+			Milliseconds: uint32(temp.Nanosecond() * 1000),
+		},
+	}, nil
+}

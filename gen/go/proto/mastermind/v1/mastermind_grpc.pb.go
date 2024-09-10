@@ -27,6 +27,7 @@ const (
 	MastermindService_GotoWaypoint_FullMethodName         = "/mastermind.v1.MastermindService/GotoWaypoint"
 	MastermindService_SetAttitude_FullMethodName          = "/mastermind.v1.MastermindService/SetAttitude"
 	MastermindService_GetKamikazeStartTime_FullMethodName = "/mastermind.v1.MastermindService/GetKamikazeStartTime"
+	MastermindService_DoKamikaze_FullMethodName           = "/mastermind.v1.MastermindService/DoKamikaze"
 )
 
 // MastermindServiceClient is the client API for MastermindService service.
@@ -51,6 +52,7 @@ type MastermindServiceClient interface {
 	// SetAttitude comannds the plane to change its attitude
 	SetAttitude(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SetAttitudeRequest, SetAttitudeResponse], error)
 	GetKamikazeStartTime(ctx context.Context, in *GetKamikazeStartTimeRequest, opts ...grpc.CallOption) (*GetKamikazeStartTimeResponse, error)
+	DoKamikaze(ctx context.Context, in *DoKamikazeRequest, opts ...grpc.CallOption) (*DoKamikazeResponse, error)
 }
 
 type mastermindServiceClient struct {
@@ -165,6 +167,16 @@ func (c *mastermindServiceClient) GetKamikazeStartTime(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *mastermindServiceClient) DoKamikaze(ctx context.Context, in *DoKamikazeRequest, opts ...grpc.CallOption) (*DoKamikazeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DoKamikazeResponse)
+	err := c.cc.Invoke(ctx, MastermindService_DoKamikaze_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MastermindServiceServer is the server API for MastermindService service.
 // All implementations should embed UnimplementedMastermindServiceServer
 // for forward compatibility.
@@ -187,6 +199,7 @@ type MastermindServiceServer interface {
 	// SetAttitude comannds the plane to change its attitude
 	SetAttitude(grpc.ClientStreamingServer[SetAttitudeRequest, SetAttitudeResponse]) error
 	GetKamikazeStartTime(context.Context, *GetKamikazeStartTimeRequest) (*GetKamikazeStartTimeResponse, error)
+	DoKamikaze(context.Context, *DoKamikazeRequest) (*DoKamikazeResponse, error)
 }
 
 // UnimplementedMastermindServiceServer should be embedded to have
@@ -219,6 +232,9 @@ func (UnimplementedMastermindServiceServer) SetAttitude(grpc.ClientStreamingServ
 }
 func (UnimplementedMastermindServiceServer) GetKamikazeStartTime(context.Context, *GetKamikazeStartTimeRequest) (*GetKamikazeStartTimeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetKamikazeStartTime not implemented")
+}
+func (UnimplementedMastermindServiceServer) DoKamikaze(context.Context, *DoKamikazeRequest) (*DoKamikazeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DoKamikaze not implemented")
 }
 func (UnimplementedMastermindServiceServer) testEmbeddedByValue() {}
 
@@ -348,6 +364,24 @@ func _MastermindService_GetKamikazeStartTime_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MastermindService_DoKamikaze_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DoKamikazeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MastermindServiceServer).DoKamikaze(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: MastermindService_DoKamikaze_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MastermindServiceServer).DoKamikaze(ctx, req.(*DoKamikazeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // MastermindService_ServiceDesc is the grpc.ServiceDesc for MastermindService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -370,6 +404,10 @@ var MastermindService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetKamikazeStartTime",
 			Handler:    _MastermindService_GetKamikazeStartTime_Handler,
+		},
+		{
+			MethodName: "DoKamikaze",
+			Handler:    _MastermindService_DoKamikaze_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

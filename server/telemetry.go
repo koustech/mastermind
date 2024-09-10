@@ -24,6 +24,7 @@ func (e *NewTelemetryEvent) EventID() evbus.EventID {
 }
 
 var Kamikazeflag = false
+var kamikaze_start_time time.Time
 
 const KamikazeSequence = 4
 const WAIT_KAMIKAZE_TIME_S = 10
@@ -82,25 +83,21 @@ func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {
 				default:
 					isAutonomous = true
 				}
-				
-			
+
 			case *ardupilotmega.MessageMissionItemReached:
 				u.Logger.Debugf("received mission item reached: %+v", msg)
 				recieved := msg.Seq
-				kamikaze_start_time := time.Now()
 				if recieved == KamikazeSequence {
-					if(s.currentState == pb.MissionState_MISSION_STATE_KAMIKAZE){
+					if s.currentState == pb.MissionState_MISSION_STATE_KAMIKAZE {
+						kamikaze_start_time = time.Now()
 						u.Logger.Warnf("Kamikaze waypoint reached UCHAK DALIOGHR!!!")
 						u.Logger.Warnf("kamikaze started at: %v", kamikaze_start_time)
-
 						SetModeKamikaze(frm.SystemID(), frm.ComponentID(), node)
 					}
 				}
-				
 
 			// case *ardupilotmega.MessageMissionCurrent:
 
-					
 			// 	recieved := msg.Seq
 			// 	if recieved == KamikazeSequence {
 			// 		elapsed_kamikaze_time := time.Now()
