@@ -1,8 +1,9 @@
 {
   "connections": {
     "mastermind": "127.0.0.1:5678",
-    "approach": "127.0.0.1:7890",
-    "competition_server": "127.0.0.1:8000"
+    "approach": "127.0.0.1:50051",
+    "competition_server": "127.0.0.1:8000",
+    "proxy": "127.0.0.1:6789"
   },
   "credentials": {
     "competition_server": {
