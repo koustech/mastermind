@@ -89,41 +89,39 @@ func (s *mastermindServiceServer) SetSpeed(_ context.Context, request *pb.SetSpe
 }
 
 func (s *mastermindServiceServer) SetCommand(_ context.Context, request *pb.SetCommandRequest) (*pb.SetCommandResponse, error) {
-	utils.Logger.Infof("Set commanding to roll :%v pitch: %v thrust: %v",request.NewRoll,request.NewPitch,request.NewThrust)
-	fmt.Println("denemeee: ",request.NewRoll,request.NewPitch,request.NewThrust)
-	rollRad  := float64(request.NewRoll)  * math.Pi / 180.0
+	utils.Logger.Infof("Set commanding to roll :%v pitch: %v thrust: %v", request.NewRoll, request.NewPitch, request.NewThrust)
+	fmt.Println("denemeee: ", request.NewRoll, request.NewPitch, request.NewThrust)
+	rollRad := float64(request.NewRoll) * math.Pi / 180.0
 	pitchRad := float64(request.NewPitch) * math.Pi / 180.0
-	yawRad   := 0.0
-	
+	yawRad := 0.0
+
 	cy := math.Cos(yawRad * 0.5)
 	sy := math.Sin(yawRad * 0.5)
 	cp := math.Cos(pitchRad * 0.5)
 	sp := math.Sin(pitchRad * 0.5)
 	cr := math.Cos(rollRad * 0.5)
 	sr := math.Sin(rollRad * 0.5)
-	
+
 	q0 := cr*cp*cy + sr*sp*sy
 	q1 := sr*cp*cy - cr*sp*sy
 	q2 := cr*sp*cy + sr*cp*sy
 	q3 := cr*cp*sy - sr*sp*cy
 
-    s.node.WriteMessageAll(&ardupilotmega.MessageSetAttitudeTarget{
-        TimeBootMs:    uint32((time.Now().UnixNano() / 1e6) % 0xFFFFFFFF),
-        TargetSystem:  1, // Gerekirse kendi SYSID
-        TargetComponent: 1,
-        TypeMask:      0b00001111, // roll+pitch aktif
-        Q:             [4]float32{float32(q0), float32(q1), float32(q2), float32(q3)},
-        BodyRollRate:  0,
-        BodyPitchRate: 0,
-        BodyYawRate:   0,
-        Thrust:        float32(request.NewThrust),
-    })
-	utils.Logger.Infof("Set commanded to roll :%v pitch: %v thrust: %v",request.NewRoll,request.NewPitch,request.NewThrust)
+	s.node.WriteMessageAll(&ardupilotmega.MessageSetAttitudeTarget{
+		TimeBootMs:      uint32((time.Now().UnixNano() / 1e6) % 0xFFFFFFFF),
+		TargetSystem:    1, // Gerekirse kendi SYSID
+		TargetComponent: 1,
+		TypeMask:        0b00001111, // roll+pitch aktif
+		Q:               [4]float32{float32(q0), float32(q1), float32(q2), float32(q3)},
+		BodyRollRate:    0,
+		BodyPitchRate:   0,
+		BodyYawRate:     0,
+		Thrust:          float32(request.NewThrust),
+	})
+	utils.Logger.Infof("Set commanded to roll :%v pitch: %v thrust: %v", request.NewRoll, request.NewPitch, request.NewThrust)
 
 	return &pb.SetCommandResponse{CommandSucceeded: true}, nil
 }
-
-
 
 // GotoWaypoint tells the plane to go to a specific point
 func (s *mastermindServiceServer) GotoWaypoint(_ context.Context, request *pb.GotoWaypointRequest) (*pb.GotoWaypointResponse, error) {
@@ -254,7 +252,8 @@ func (s *mastermindServiceServer) GetKamikazeStartTime(_ context.Context, reques
 			Hours:        uint32(temp.Hour()),
 			Minutes:      uint32(temp.Minute()),
 			Seconds:      uint32(temp.Second()),
-			Milliseconds: uint32(temp.Nanosecond() * 1000),
+			Milliseconds: uint32(math.Round(float64(temp.Nanosecond()) / 1e6)),
+			//Milliseconds: uint32(temp.Nanosecond() * 1000),
 		},
 	}, nil
 }
@@ -266,7 +265,7 @@ func (s *mastermindServiceServer) DoKamikaze(_ context.Context, request *pb.DoKa
 	SetModeKamikaze(s.sysId, s.compId, s.node)
 
 	// set kamikaze start time
-	kamikaze_start_time = time.Now()
+	kamikaze_start_time = time.Now().UTC()
 
 	return &pb.DoKamikazeResponse{}, nil
 }

@@ -18,7 +18,7 @@ func main() {
 	var mavlinkAddress string
 	var test bool
 	flag.StringVar(&grpcAddress, "a", "0.0.0.0:5678", "Mastermind's gRPC server address")
-	flag.StringVar(&mavlinkAddress, "m", "127.0.0.1:14800", "The source MAVLink vehicle's ip address")
+	flag.StringVar(&mavlinkAddress, "m", "0.0.0.0:14550", "The source MAVLink vehicle's ip address")
 	flag.BoolVar(&test, "test", false, "Disables telemetry mode")
 	flag.Parse()
 
