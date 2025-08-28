@@ -8,9 +8,9 @@
   "credentials": {
     "competition_server": {
       "kadi": "koustech",
-      "sifre": "d9a1b26qft"
+      "sifre": "MXmWqGqXTK"
     }
   },
-  "koustech_team_id": 13,
+  "koustech_team_id": 1,
   "telem_send_period_ms": 700
 }
