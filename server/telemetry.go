@@ -26,7 +26,7 @@ func (e *NewTelemetryEvent) EventID() evbus.EventID {
 var Kamikazeflag = false
 var kamikaze_start_time time.Time
 
-const KamikazeSequence = 4
+const KamikazeSequence = 35
 const WAIT_KAMIKAZE_TIME_S = 10
 
 func GetTelem(s *mastermindServiceServer, node *gomavlib.Node) {

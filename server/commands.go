@@ -265,7 +265,7 @@ func (s *mastermindServiceServer) DoKamikaze(_ context.Context, request *pb.DoKa
 	SetModeKamikaze(s.sysId, s.compId, s.node)
 
 	// set kamikaze start time
-	kamikaze_start_time = time.Now().UTC()
+	kamikaze_start_time = time.Now()
 
 	return &pb.DoKamikazeResponse{}, nil
 }
